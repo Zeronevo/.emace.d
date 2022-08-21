@@ -749,3 +749,45 @@ Sarasa Mono Slab SC    Cascadia Code PL SemiBold
   ;;(set-face-background 'region "violet")	;;选中区域背景色
   (set-face-background 'region "#b7ba6b")	;;选中区域背景色
 #+end_src
+* 内置包系统差异等配置
+** 如果是windows就把默认minibuffer打开路径设置为下面的 
+#+begin_src emacs-lisp
+  (when *is-windows*
+    (setq default-directory "e:/"))
+#+end_src
+** eshell no need company
+#+begin_src emacs-lisp
+  (add-hook 'eshell-mode-hook
+              (lambda ()
+                (company-mode -1)))
+#+end_src
+** org-mode config
+#+begin_src emacs-lisp
+  ;; 把org-mode的时间显示改成英文
+  ;; (setq system-time-locale "C")
+  ;; (add-hook 'org-mode-hook
+  ;; 	  (lambda ()
+  ;; 	    (set (make-local-variable 'system-time-locale) "C")))
+
+  (setq org-ellipsis " ◄")
+  (add-hook 'org-mode-hook
+            (lambda ()
+              ;;(setq truncate-lines nil) ;; org-mode 自动折行功能
+              (org-indent-mode)
+              (linum-mode -1)))
+#+end_src
+** dired-mode config
+#+begin_src emacs-lisp
+  ;;(put 'dired-find-alternate-file 'disabled nil)
+
+  ;; (with-eval-after-load 'dired
+  ;;   (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file))
+
+  ;; (setq dired-recursive-deletes 'always)
+  ;; (setq dired-recursive-copies 'always)
+
+  ;; (add-hook 'dired-mode-hook
+  ;;           (lambda ()
+  ;;             (define-key dired-mode-map (kbd "^")
+  ;;               (lambda () (interactive) (find-alternate-file "..")))))
+#+end_src
