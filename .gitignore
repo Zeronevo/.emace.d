@@ -11,12 +11,14 @@
 *.~undo-tree
 
 # Self
-.cache
-auto-save-list
+.cache/
+auto-save-list/
+elpa/
+transient/
+server/
+eshell/
+
 settings.el
 custom.el
-elpa
-transient
 .lsp*
-eshell
 recentf

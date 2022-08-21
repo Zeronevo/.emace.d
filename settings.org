@@ -131,7 +131,6 @@
   ;;     (setq zero-current-input (cdr zero-current-input)))
   ;;   (set-input-method (car zero-current-input)))
 #+end_src
-
 * 配置软件源镜像
 初始的 gnu 源 melpa emacs
 ("gnu" . "http://elpa.gnu.org/packages/")
@@ -182,7 +181,6 @@
   ;;(setq use-package-expand-minimally t)
   ;;(setq use-package-verbose t)
 #+end_src
-
 * 安装软件包并且配置
 ** exec-path-from-shell
 macOS解决shell和emacs路径不统一
@@ -595,7 +593,6 @@ macOS解决shell和emacs路径不统一
     :ensure t
     :defer t)
 #+end_src
-
 * 配置编码格式字符编码
 #+begin_src emacs-lisp
 ;; 这个如果设定了在windows下会出现莫名的乱码不认字体
@@ -627,7 +624,6 @@ macOS解决shell和emacs路径不统一
 ;;(set-clipboard-coding-system 'utf-8)
 ;;(set-selection-coding-system 'utf-8)
 #+end_src
-
 * 配置字体
 - 字体设计
 Monaco    Source Code Pro    微软雅黑Monaco
@@ -791,7 +787,6 @@ Sarasa Mono Slab SC    Cascadia Code PL SemiBold
   ;;             (define-key dired-mode-map (kbd "^")
   ;;               (lambda () (interactive) (find-alternate-file "..")))))
 #+end_src
-
 * 自定义快捷键绑定
 三种配置步骤
 第一种:通用隐含与leader按键绑定配置
