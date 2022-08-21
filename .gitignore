@@ -17,3 +17,6 @@ settings.el
 custom.el
 elpa
 transient
+.lsp*
+eshell
+recentf
