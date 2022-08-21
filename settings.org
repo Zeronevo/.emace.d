@@ -182,3 +182,416 @@
   ;;(setq use-package-expand-minimally t)
   ;;(setq use-package-verbose t)
 #+end_src
+
+* 安装软件包并且配置
+** exec-path-from-shell
+macOS解决shell和emacs路径不统一
+#+begin_src emacs-lisp
+  (when (memq window-system '(mac ns))
+    (use-package exec-path-from-shell
+      :ensure t
+      ;; :pin melpa-stable
+      :config
+      (exec-path-from-shell-initialize)))
+#+end_src
+** dracula-theme主题
+#+begin_src emacs-lisp
+  (use-package dracula-theme
+    :ensure t
+    ;; :pin melpa-stable
+    :config
+    (load-theme 'dracula t))
+#+end_src
+** which-key
+#+begin_src emacs-lisp
+  (use-package which-key
+    :ensure t
+    ;; :pin melpa-stable
+    :config
+    (which-key-mode))
+#+end_src
+** ivy
+#+begin_src emacs-lisp
+  (use-package ivy
+    :ensure t
+    ;; :pin melpa-stable
+    :config
+    (ivy-mode)
+    ;; (setq ivy-use-virtual-buffers t)
+    ;; (setq ivy-initial-inputs-alist nil)
+    ;; (setq enable-recursive-minibuffers t)
+    ;; (setq ivy-re-builders-alist '((t . ivy--regex-ignore-order))))
+    (setq ivy-count-format "(%d/%d) "))
+#+end_src
+** counsel
+#+begin_src emacs-lisp
+  (use-package counsel
+    :ensure t
+    ;; :pin melpa-stable
+    :after (ivy)
+    :bind (("M-x" . counsel-M-x)
+           ;;("C-c g" . counsel-git)
+           ;;("C-c f" . counsel-recentf)
+           ("C-x b" . counsel-switch-buffer)
+           ("C-x C-b" . ibuffer)
+           ("C-x C-f" . counsel-find-file)))
+#+end_src
+** swiper
+#+begin_src emacs-lisp
+  (use-package swiper
+    :ensure t
+    ;; :pin melpa-stable
+    :after (ivy)
+    :bind (;;("C-r" . swiper-isearch-backward)
+           ("C-s" . swiper)))
+    ;; :config
+    ;; (setq swiper-action-recenter t)
+    ;; (setq swiper-include-line-number-in-search t)
+#+end_src
+** 彩虹括号等
+#+begin_src emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    ;; :pin melpa-stable
+    :defer 1
+    :config
+    (rainbow-delimiters-mode)
+    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+#+end_src
+** company
+#+begin_src emacs-lisp
+  ;; :bind
+  ;;   (:map company-active-map
+  ;; 	      ("C-n". company-select-next)
+  ;; 	      ("C-p". company-select-previous)
+  ;; 	      ("M-<". company-select-first)
+  ;; 	      ("M->". company-select-last))
+  (use-package company
+    :ensure t
+    ;;:pin melpa-stable
+    :config
+    (add-hook 'after-init-hook 'global-company-mode)
+    ;;(setq company-begin-commands '(self-insert-command))
+    ;;(setq company-tooltip-limit 20)
+    ;;(setq company-require-match nil)
+    ;;(setq company-dabbrev-ignore-case t)
+    ;;(setq company-dabbrev-downcase nil)
+    ;;(setq company-dabbrev-other-buffers 'all)
+    ;;(setq company-dabbrev-code-everywhere t)
+    ;;(setq company-dabbrev-code-modes t)
+    ;;(setq company-dabbrev-code-other-buffers 'all)
+    (setq company-minimum-prefix-length 1)
+    (setq company-idle-delay 0.0)
+    (setq company-tooltip-offset-display 'lines)
+    (setq company-show-numbers t)
+    (setq company-backends
+          '(
+             (company-capf 
+             :with company-yasnippet :separate
+             company-dabbrev-code company-gtags
+             company-etags company-keywords)
+             company-bbdb company-semantic company-cmake
+             company-clang company-files
+             company-oddmuse company-dabbrev
+            )))
+#+end_src
+** eglot
+#+begin_src emacs-lisp
+  ;;(require 'eglot)
+  ;; 选择服务器
+  ;; (add-to-list 'eglot-server-programs '(foo-mode . ("foo-language-server" "--args")))
+  ;;(add-to-list 'eglot-server-programs '(c-mode . ("clangd")))
+  ;; c语言启动eglot
+  ;;(add-hook 'c-mode-hook 'eglot-ensure)
+  ;; 绑定快捷键
+  ;;(define-key eglot-mode-map (kbd "C-c h") 'eglot-help-at-point)
+  ;;(define-key eglot-mode-map (kbd "C-c C-f") 'eglot-format-buffer)
+  ;;(define-key eglot-mode-map (kbd "<f6>") 'xref-find-definitions)
+  ;;(define-key eglot-mode-map (kbd "C-c o") 'eglot-code-action-organize-imports)
+
+  ;; (use-package eglot
+  ;;   :ensure t
+  ;;   :defer 1
+  ;;   :config
+  ;;   (add-to-list 'eglot-server-programs '(rust-mode . ("rust-analyzer")))
+  ;;   (add-hook 'rust-mode-hook 'eglot-ensure))
+  ;;   ;; golang
+  ;;   (add-hook 'go-mode-hook 'eglot-ensure))
+
+  ;; (defun eglot-format-buffer-on-save ()
+  ;;   (add-hook 'before-save-hook #'eglot-format-buffer -10 t)
+  ;;   (add-hook 'before-save-hook #'eglot-code-action-organize-imports -10 t))
+  ;; (add-hook 'go-mode-hook #'eglot-format-buffer-on-save)
+#+end_src
+** lsp
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :ensure t
+    ;;:pin melpa-stable
+    :defer 1
+    :init
+    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+    (setq lsp-keymap-prefix "C-c l")
+    :commands (lsp lsp-deferred)
+    :hook (go-mode . lsp-deferred)
+    ;;:hook (gdscript-mode . lsp-deferred)
+    ;;:hook (rust-mode . lsp-deferred)
+    ;;:hook (haskell-mode . lsp-deferred)
+    ;;:hook (racket-mode . lsp-deferred)
+    :custom
+    (lsp-rust-analyzer-server-display-inlay-hints t)
+    (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
+    (lsp-rust-analyzer-display-chaining-hints t)
+    (lsp-rust-analyzer-display-closure-return-type-hints t)
+    ;;(lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
+    ;;(lsp-rust-analyzer-display-parameter-hints nil)
+    ;;(lsp-rust-analyzer-display-reborrow-hints nil)
+    :config
+    (setq gc-cons-threshold 100000000)
+    (setq read-process-output-max (* 1024 1024)) ;; 1mb
+    (setq lsp-modeline-code-actions-segments '(count icon name))
+    ;;(setq lsp-modeline-diagnostics-enable t) ;;Project errors on modeline
+    ;;(setq lsp-headerline-breadcrumb-enable-symbol-numbers t)
+    ;;(setq lsp-idle-delay 0.500)
+    ;;(setq lsp-log-io nil) ;;if set to true can cause a performance hit
+    ;;(setq lsp-enable-file-watchers nil)
+    (setq lsp-signature-render-documentation nil) ;; 关闭在minibuffer的用eldoc显示的文档
+    (setq lsp-completion-provider :none) ;; lsp会自动设置company的backends，需要禁止此功能
+    )
+#+end_src
+** lsp-ui
+#+begin_src emacs-lisp
+  (use-package lsp-ui
+    :ensure t
+    :custom
+    (lsp-ui-peek-always-show t)
+    (lsp-ui-sideline-show-hover t)
+    (lsp-ui-doc-enable nil)
+    :commands lsp-ui-mode)
+#+end_src
+** flycheck
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :ensure t
+    ;;:pin melpa-stable
+    :defer 1)
+#+end_src
+** flycheck-rust
+#+begin_src emacs-lisp
+  ;; (use-package flycheck-rust
+  ;;   :ensure t
+  ;;   ;;:pin melpa-stable
+  ;;   :defer 1)
+#+end_src
+** yasnippet
+#+begin_src emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    ;;:pin melpa-stable
+    :config
+    ;; main mode
+    ;;(yas-global-mode 1)
+    ;; minor mode
+    (yas-reload-all)
+    (add-hook 'prog-mode-hook #'yas-minor-mode))
+#+end_src
+** yasnippet-snippets
+#+begin_src emacs-lisp
+  (use-package yasnippet-snippets
+    :ensure t
+    ;;:pin melpa-stable
+    :defer 1)
+#+end_src
+** haskell
+#+begin_src emacs-lisp
+  ;; (use-package haskell-mode
+  ;;   :ensure t
+  ;;   :defer 1
+  ;;   )
+#+end_src
+** lsp-haskell
+#+begin_src emacs-lisp
+  ;; (use-package lsp-haskell
+  ;;   :ensure t
+  ;;   :defer 1
+  ;;   )
+
+  ;; (defun lsp-haskell-install-save-hooks ()
+  ;;   (add-hook 'before-save-hook #'lsp-format-buffer))
+  ;; (add-hook 'haskell-mode-hook #'lsp-haskell-install-save-hooks)
+
+  ;; (add-hook 'haskell-interactive-mode-hook
+  ;; 	  (lambda () (linum-mode -1)))
+#+end_src
+** common lisp slime
+#+begin_src emacs-lisp
+  ;;(use-package slime
+  ;;  :config (setq inferior-lisp-program "/usr/bin/sbcl"))
+#+end_src
+** rust
+#+begin_src emacs-lisp
+  ;; (use-package rust-mode
+  ;;   :ensure t
+  ;;   :defer 1
+  ;;   :config
+  ;;   (setq rust-format-on-save t)
+  ;;   (define-key rust-mode-map (kbd "C-c C-c") 'rust-run)
+  ;;   )
+#+end_src
+** racket
+#+begin_src emacs-lisp
+  ;; (use-package racket-mode
+  ;;   :ensure t
+  ;;   :defer 1)
+#+end_src
+** golang
+#+begin_src emacs-lisp
+  (use-package go-mode
+    :ensure t
+    ;; :pin melpa
+    :defer 1)
+
+  ;;:config
+  ;;(setq gofmt-command "goimports")
+  ;;(add-hook 'before-save-hook 'gofmt-before-save)
+
+  ;; go-mode default tab is 8, now set to 4
+  ;; (add-hook 'go-mode-hook
+  ;;           (lambda ()
+  ;;             ;;(setq indent-tabs-mode 1)
+  ;;             (setq tab-width 4)))
+
+  ;; Set up before-save hooks to format buffer and add/delete imports.
+  ;; Make sure you don't have other gofmt/goimports hooks enabled.
+  (defun lsp-go-install-save-hooks ()
+    (setq tab-width 4)
+    (define-key go-mode-map (kbd "C-c C-c") 'go-run)
+    (add-hook 'before-save-hook #'lsp-format-buffer)
+    (add-hook 'before-save-hook #'lsp-organize-imports))
+  (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+#+end_src
+** godot
+#+begin_src emacs-lisp
+  (use-package gdscript-mode
+    :ensure t
+    :config
+    ;;(setq gdscript-gdformat-save-and-format t)
+    ;;(setq gdscript-godot-executable "D:/ProgramFilese/godot.exe")
+    (setq gdscript-use-tab-indents t)
+    (setq gdscript-indent-offset 4)
+    )
+
+  ;; (defun lsp--gdscript-ignore-errors (original-function &rest args)
+  ;; "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
+  ;; (if (string-equal major-mode "gdscript-mode")
+  ;;     (let ((json-data (nth 0 args)))
+  ;;       (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
+  ;;                (not (gethash "id" json-data nil))
+  ;;                (not (gethash "method" json-data nil)))
+  ;;           nil ; (message "Method not found")
+  ;;         (apply original-function args)))
+  ;;   (apply original-function args)))
+  ;; ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
+  ;; (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
+#+end_src
+** treemacs
+#+begin_src emacs-lisp
+  (use-package treemacs
+    :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-9") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay        0.5
+          treemacs-directory-name-transformer      #'identity
+          treemacs-display-in-side-window          t
+          treemacs-eldoc-display                   'simple
+          treemacs-file-event-delay                5000
+          treemacs-file-extension-regex            treemacs-last-period-regex-value
+          treemacs-file-follow-delay               0.2
+          treemacs-file-name-transformer           #'identity
+          treemacs-follow-after-init               t
+          treemacs-expand-after-init               t
+          treemacs-find-workspace-method           'find-for-file-or-pick-first
+          treemacs-git-command-pipe                ""
+          treemacs-goto-tag-strategy               'refetch-index
+          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+          treemacs-hide-dot-git-directory          t
+          treemacs-indentation                     2
+          treemacs-indentation-string              " "
+          treemacs-is-never-other-window           nil
+          treemacs-max-git-entries                 5000
+          treemacs-missing-project-action          'ask
+          treemacs-move-forward-on-expand          nil
+          treemacs-no-png-images                   nil
+          treemacs-no-delete-other-windows         t
+          treemacs-project-follow-cleanup          nil
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                        'left
+          treemacs-read-string-input               'from-child-frame
+          treemacs-recenter-distance               0.1
+          treemacs-recenter-after-file-follow      nil
+          treemacs-recenter-after-tag-follow       nil
+          treemacs-recenter-after-project-jump     'always
+          treemacs-recenter-after-project-expand   'on-distance
+          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+          treemacs-show-cursor                     nil
+          treemacs-show-hidden-files               t
+          treemacs-silent-filewatch                nil
+          treemacs-silent-refresh                  nil
+          treemacs-sorting                         'alphabetic-asc
+          treemacs-select-when-already-in-treemacs 'move-back
+          treemacs-space-between-root-nodes        t
+          treemacs-tag-follow-cleanup              t
+          treemacs-tag-follow-delay                1.5
+          treemacs-text-scale                      nil
+          treemacs-user-mode-line-format           nil
+          treemacs-user-header-line-format         nil
+          treemacs-wide-toggle-width               70
+          treemacs-width                           35
+          treemacs-width-increment                 1
+          treemacs-width-is-initially-locked       t
+          treemacs-workspace-switch-cleanup        nil
+
+          treemacs-git-mode                        nil
+          )
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+    ;;(when treemacs-python-executable
+    ;;  (treemacs-git-commit-diff-mode t))
+
+    ;;(pcase (cons (not (null (executable-find "git")))
+    ;;             (not (null treemacs-python-executable)))
+    ;;  (`(t . t)
+    ;;   (treemacs-git-mode 'deferred))
+    ;;  (`(t . _)
+    ;;   (treemacs-git-mode 'simple)))
+
+    (treemacs-hide-gitignored-files-mode nil))
+  :bind
+  (:map global-map
+        ("M-9"       . treemacs-select-window)
+        ;;("C-x t 1"   . treemacs-delete-other-windows)
+        ;;("C-x t t"   . treemacs)
+        ;;("C-x t d"   . treemacs-select-directory)
+        ;;("C-x t B"   . treemacs-bookmark)
+        ;;("C-x t C-t" . treemacs-find-file)
+        ;;("C-x t M-t" . treemacs-find-tag)
+        )
+  )
+#+end_src
+** magit
+#+begin_src emacs-lisp
+  (use-package magit
+    :ensure t
+    :defer t)
+#+end_src
