@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: finit()
+# key: finit
+# --
+func init() {
+     $0
+}
