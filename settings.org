@@ -150,7 +150,7 @@
 #+begin_src emacs-lisp
   (setq package-archives
         '(("gnu"		. "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
-          ("melpa"              . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+          ("melpa"            . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
           ("melpa-stable"	. "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 #+end_src
 * 安装包管理配置
@@ -326,12 +326,14 @@ macOS解决shell和emacs路径不统一
   (use-package lsp-mode
     :ensure t
     ;;:pin melpa-stable
-    :defer 1
+    :defer t
     :init
     ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
     (setq lsp-keymap-prefix "C-c l")
     :commands (lsp lsp-deferred)
     :hook (go-mode . lsp-deferred)
+    :hook (c-mode . lsp-deferred)
+    :hook (c++-mode . lsp-deferred)
     ;;:hook (gdscript-mode . lsp-deferred)
     ;;:hook (rust-mode . lsp-deferred)
     ;;:hook (haskell-mode . lsp-deferred)
@@ -361,6 +363,8 @@ macOS解决shell和emacs路径不统一
 #+begin_src emacs-lisp
   (use-package lsp-ui
     :ensure t
+    ;;:after (lsp)
+    :defer t
     :custom
     (lsp-ui-peek-always-show t)
     (lsp-ui-sideline-show-hover t)
@@ -372,7 +376,7 @@ macOS解决shell和emacs路径不统一
   (use-package flycheck
     :ensure t
     ;;:pin melpa-stable
-    :defer 1)
+    :defer t)
 #+end_src
 ** flycheck-rust
 #+begin_src emacs-lisp
@@ -398,7 +402,8 @@ macOS解决shell和emacs路径不统一
   (use-package yasnippet-snippets
     :ensure t
     ;;:pin melpa-stable
-    :defer 1)
+    ;;:defer 1
+    :after (yasnippet))
 #+end_src
 ** haskell
 #+begin_src emacs-lisp
@@ -430,7 +435,7 @@ macOS解决shell和emacs路径不统一
 #+begin_src emacs-lisp
   ;; (use-package rust-mode
   ;;   :ensure t
-  ;;   :defer 1
+  ;;   :defer t
   ;;   :config
   ;;   (setq rust-format-on-save t)
   ;;   (define-key rust-mode-map (kbd "C-c C-c") 'rust-run)
@@ -440,6 +445,7 @@ macOS解决shell和emacs路径不统一
 #+begin_src emacs-lisp
   ;; (use-package racket-mode
   ;;   :ensure t
+  ;;   :disabled
   ;;   :defer 1)
 #+end_src
 ** golang
@@ -447,7 +453,7 @@ macOS解决shell和emacs路径不统一
   (use-package go-mode
     :ensure t
     ;; :pin melpa
-    :defer 1)
+    :defer t)
 
   ;;:config
   ;;(setq gofmt-command "goimports")
@@ -469,123 +475,121 @@ macOS解决shell和emacs路径不统一
   (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 #+end_src
 ** godot
+  (defun lsp--gdscript-ignore-errors (original-function &rest args)
+  "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
+  (if (string-equal major-mode "gdscript-mode")
+      (let ((json-data (nth 0 args)))
+        (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
+                 (not (gethash "id" json-data nil))
+                 (not (gethash "method" json-data nil)))
+            nil ; (message "Method not found")
+          (apply original-function args)))
+    (apply original-function args)))
+  ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
+  (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
 #+begin_src emacs-lisp
-  (use-package gdscript-mode
-    :ensure t
-    :config
-    ;;(setq gdscript-gdformat-save-and-format t)
-    ;;(setq gdscript-godot-executable "D:/ProgramFilese/godot.exe")
-    (setq gdscript-use-tab-indents t)
-    (setq gdscript-indent-offset 4)
-    )
-
-  ;; (defun lsp--gdscript-ignore-errors (original-function &rest args)
-  ;; "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
-  ;; (if (string-equal major-mode "gdscript-mode")
-  ;;     (let ((json-data (nth 0 args)))
-  ;;       (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
-  ;;                (not (gethash "id" json-data nil))
-  ;;                (not (gethash "method" json-data nil)))
-  ;;           nil ; (message "Method not found")
-  ;;         (apply original-function args)))
-  ;;   (apply original-function args)))
-  ;; ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
-  ;; (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
+  ;;(use-package gdscript-mode
+  ;;  :ensure t
+  ;;  :config
+  ;;  ;;(setq gdscript-gdformat-save-and-format t)
+  ;;  ;;(setq gdscript-godot-executable "D:/ProgramFilese/godot.exe")
+  ;;  (setq gdscript-use-tab-indents t)
+  ;;  (setq gdscript-indent-offset 4))
 #+end_src
 ** treemacs
 #+begin_src emacs-lisp
   (use-package treemacs
     :ensure t
-  :defer t
-  :init
-  (with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-9") #'treemacs-select-window))
-  :config
-  (progn
-    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-          treemacs-deferred-git-apply-delay        0.5
-          treemacs-directory-name-transformer      #'identity
-          treemacs-display-in-side-window          t
-          treemacs-eldoc-display                   'simple
-          treemacs-file-event-delay                5000
-          treemacs-file-extension-regex            treemacs-last-period-regex-value
-          treemacs-file-follow-delay               0.2
-          treemacs-file-name-transformer           #'identity
-          treemacs-follow-after-init               t
-          treemacs-expand-after-init               t
-          treemacs-find-workspace-method           'find-for-file-or-pick-first
-          treemacs-git-command-pipe                ""
-          treemacs-goto-tag-strategy               'refetch-index
-          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-          treemacs-hide-dot-git-directory          t
-          treemacs-indentation                     2
-          treemacs-indentation-string              " "
-          treemacs-is-never-other-window           nil
-          treemacs-max-git-entries                 5000
-          treemacs-missing-project-action          'ask
-          treemacs-move-forward-on-expand          nil
-          treemacs-no-png-images                   nil
-          treemacs-no-delete-other-windows         t
-          treemacs-project-follow-cleanup          nil
-          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-          treemacs-position                        'left
-          treemacs-read-string-input               'from-child-frame
-          treemacs-recenter-distance               0.1
-          treemacs-recenter-after-file-follow      nil
-          treemacs-recenter-after-tag-follow       nil
-          treemacs-recenter-after-project-jump     'always
-          treemacs-recenter-after-project-expand   'on-distance
-          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-          treemacs-show-cursor                     nil
-          treemacs-show-hidden-files               t
-          treemacs-silent-filewatch                nil
-          treemacs-silent-refresh                  nil
-          treemacs-sorting                         'alphabetic-asc
-          treemacs-select-when-already-in-treemacs 'move-back
-          treemacs-space-between-root-nodes        t
-          treemacs-tag-follow-cleanup              t
-          treemacs-tag-follow-delay                1.5
-          treemacs-text-scale                      nil
-          treemacs-user-mode-line-format           nil
-          treemacs-user-header-line-format         nil
-          treemacs-wide-toggle-width               70
-          treemacs-width                           35
-          treemacs-width-increment                 1
-          treemacs-width-is-initially-locked       t
-          treemacs-workspace-switch-cleanup        nil
+    :defer t
+    :init
+    (with-eval-after-load 'winum
+      (define-key winum-keymap (kbd "M-9") #'treemacs-select-window))
+    :config
+    (progn
+      (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+            treemacs-deferred-git-apply-delay        0.5
+            treemacs-directory-name-transformer      #'identity
+            treemacs-display-in-side-window          t
+            treemacs-eldoc-display                   'simple
+            treemacs-file-event-delay                5000
+            treemacs-file-extension-regex            treemacs-last-period-regex-value
+            treemacs-file-follow-delay               0.2
+            treemacs-file-name-transformer           #'identity
+            treemacs-follow-after-init               t
+            treemacs-expand-after-init               t
+            treemacs-find-workspace-method           'find-for-file-or-pick-first
+            treemacs-git-command-pipe                ""
+            treemacs-goto-tag-strategy               'refetch-index
+            treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+            treemacs-hide-dot-git-directory          t
+            treemacs-indentation                     2
+            treemacs-indentation-string              " "
+            treemacs-is-never-other-window           nil
+            treemacs-max-git-entries                 5000
+            treemacs-missing-project-action          'ask
+            treemacs-move-forward-on-expand          nil
+            treemacs-no-png-images                   nil
+            treemacs-no-delete-other-windows         t
+            treemacs-project-follow-cleanup          nil
+            treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+            treemacs-position                        'left
+            treemacs-read-string-input               'from-child-frame
+            treemacs-recenter-distance               0.1
+            treemacs-recenter-after-file-follow      nil
+            treemacs-recenter-after-tag-follow       nil
+            treemacs-recenter-after-project-jump     'always
+            treemacs-recenter-after-project-expand   'on-distance
+            treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+            treemacs-show-cursor                     nil
+            treemacs-show-hidden-files               t
+            treemacs-silent-filewatch                nil
+            treemacs-silent-refresh                  nil
+            treemacs-sorting                         'alphabetic-asc
+            treemacs-select-when-already-in-treemacs 'move-back
+            treemacs-space-between-root-nodes        t
+            treemacs-tag-follow-cleanup              t
+            treemacs-tag-follow-delay                1.5
+            treemacs-text-scale                      nil
+            treemacs-user-mode-line-format           nil
+            treemacs-user-header-line-format         nil
+            treemacs-wide-toggle-width               70
+            treemacs-width                           35
+            treemacs-width-increment                 1
+            treemacs-width-is-initially-locked       t
+            treemacs-workspace-switch-cleanup        nil
 
-          treemacs-git-mode                        nil
+            treemacs-git-mode                        nil
+            )
+
+      ;; The default width and height of the icons is 22 pixels. If you are
+      ;; using a Hi-DPI display, uncomment this to double the icon size.
+      ;;(treemacs-resize-icons 44)
+
+      (treemacs-follow-mode t)
+      (treemacs-filewatch-mode t)
+      (treemacs-fringe-indicator-mode 'always)
+      ;;(when treemacs-python-executable
+      ;;  (treemacs-git-commit-diff-mode t))
+
+      ;;(pcase (cons (not (null (executable-find "git")))
+      ;;             (not (null treemacs-python-executable)))
+      ;;  (`(t . t)
+      ;;   (treemacs-git-mode 'deferred))
+      ;;  (`(t . _)
+      ;;   (treemacs-git-mode 'simple)))
+
+      (treemacs-hide-gitignored-files-mode nil))
+    :bind
+    (:map global-map
+          ("M-9"       . treemacs-select-window)
+          ;;("C-x t 1"   . treemacs-delete-other-windows)
+          ;;("C-x t t"   . treemacs)
+          ;;("C-x t d"   . treemacs-select-directory)
+          ;;("C-x t B"   . treemacs-bookmark)
+          ;;("C-x t C-t" . treemacs-find-file)
+          ;;("C-x t M-t" . treemacs-find-tag)
           )
-
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
-
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (treemacs-fringe-indicator-mode 'always)
-    ;;(when treemacs-python-executable
-    ;;  (treemacs-git-commit-diff-mode t))
-
-    ;;(pcase (cons (not (null (executable-find "git")))
-    ;;             (not (null treemacs-python-executable)))
-    ;;  (`(t . t)
-    ;;   (treemacs-git-mode 'deferred))
-    ;;  (`(t . _)
-    ;;   (treemacs-git-mode 'simple)))
-
-    (treemacs-hide-gitignored-files-mode nil))
-  :bind
-  (:map global-map
-        ("M-9"       . treemacs-select-window)
-        ;;("C-x t 1"   . treemacs-delete-other-windows)
-        ;;("C-x t t"   . treemacs)
-        ;;("C-x t d"   . treemacs-select-directory)
-        ;;("C-x t B"   . treemacs-bookmark)
-        ;;("C-x t C-t" . treemacs-find-file)
-        ;;("C-x t M-t" . treemacs-find-tag)
-        )
-  )
+    )
 #+end_src
 ** magit
 #+begin_src emacs-lisp
@@ -595,34 +599,34 @@ macOS解决shell和emacs路径不统一
 #+end_src
 * 配置编码格式字符编码
 #+begin_src emacs-lisp
-;; 这个如果设定了在windows下会出现莫名的乱码不认字体
-;; (setq locale-coding-system 'utf-8)
+  ;; 这个如果设定了在windows下会出现莫名的乱码不认字体
+  ;; (setq locale-coding-system 'utf-8)
 
-;; windows下设定语言环境会出现字体混乱
-;; (set-language-environment 'utf-8)
+  ;; windows下设定语言环境会出现字体混乱
+  ;; (set-language-environment 'utf-8)
 
-;; 默认读取文件编码
-(prefer-coding-system 'utf-8)
+  ;; 默认读取文件编码
+  (prefer-coding-system 'utf-8)
 
-;; 默认写入文件的编码格式
-(set-buffer-file-coding-system 'utf-8)
+  ;; 默认写入文件的编码格式
+  (set-buffer-file-coding-system 'utf-8)
 
-;; 新建文件编码
-(set-default-coding-systems 'utf-8)
+  ;; 新建文件编码
+  (set-default-coding-systems 'utf-8)
 
-;; 键盘输入
-(set-keyboard-coding-system 'utf-8)
+  ;; 键盘输入
+  (set-keyboard-coding-system 'utf-8)
 
-;; 终端
-(set-terminal-coding-system 'utf-8)
+  ;; 终端
+  (set-terminal-coding-system 'utf-8)
 
-;; 文件名
-(set-file-name-coding-system 'utf-8)
+  ;; 文件名
+  (set-file-name-coding-system 'utf-8)
 
-;; 下面两个是设置剪切板的字符集
-;; 因为windows是utf-16-le所以设置后复制粘贴会出现乱码
-;;(set-clipboard-coding-system 'utf-8)
-;;(set-selection-coding-system 'utf-8)
+  ;; 下面两个是设置剪切板的字符集
+  ;; 因为windows是utf-16-le所以设置后复制粘贴会出现乱码
+  ;;(set-clipboard-coding-system 'utf-8)
+  ;;(set-selection-coding-system 'utf-8)
 #+end_src
 * 配置字体
 - 字体设计
@@ -725,13 +729,13 @@ Sarasa Mono Slab SC    Cascadia Code PL SemiBold
   ;;(global-display-line-numbers-mode t)
 
   ;; 全屏打开Emacs
-  (setq initial-frame-alist (quote ((fullscreen . maximized))))
+  ;;(setq initial-frame-alist (quote ((fullscreen . maximized))))
 
   ;; 自动调整行高
   ;;(setq auto-window-vscroll nil)
 
   ;; 打开时画面大小
-  ;;(setq default-frame-alist '((width . 99) (height . 29)))
+  (setq default-frame-alist '((width . 99) (height . 29)))
 
   ;; 减少垃圾回收次数 数值调到最大
   ;;(setq gc-cons-threshold most-positive-fixnum)
@@ -855,7 +859,7 @@ Sarasa Mono Slab SC    Cascadia Code PL SemiBold
   (define-key zero-keymap (kbd "M-f") 'zero-move-word-right)
 
   ;; haskell load file in repl
-  (define-key zero-keymap (kbd "y") 'company-other-backend)
+  ;;(define-key zero-keymap (kbd "y") 'company-other-backend)
 
   ;; programming format buffer
   (define-key zero-keymap (kbd "M-f") 'lsp-format-buffer)
