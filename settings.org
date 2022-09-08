@@ -1,16 +1,15 @@
 #+TITLE: init
 #+STARTUP: overview
 * 初始化
-** 添加路径 require 文件
+** 添加路径 require 文件, 不是文件加载方式所以不需要
 #+begin_src emacs-lisp
-  (add-to-list 'load-path (expand-file-name (concat user-emacs-directory "etc")))
+  ;;(add-to-list 'load-path (expand-file-name (concat user-emacs-directory "etc")))
 #+end_src
-** 当用户手动从Emacs中修改设置，系统自动生成的文件放到下面目录
+** 当用户手动从Emacs中修改设置
 #+begin_src emacs-lisp
+  ;; 系统自动生成的文件放到下面目录
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-#+end_src
-** 当有系统自动生成文件时，加载它
-#+begin_src emacs-lisp
+  ;; 当有系统自动生成文件时，加载它
   (when (file-exists-p custom-file) (load-file custom-file))
 #+end_src
 ** 不进行签名检查
@@ -28,13 +27,6 @@
         (eq system-type 'windows-nt)))
 #+end_src
 ** 自定义函数
-*** go run
-#+begin_src emacs-lisp
-  (defun go-run()
-    (interactive)
-    (eshell)
-    (insert "go run ."))
-#+end_src
 *** 打开配置文件
 #+begin_src emacs-lisp
   (defun zero-open-init-file()
@@ -136,11 +128,11 @@
 ("gnu" . "http://elpa.gnu.org/packages/")
 
 清华大学镜像站点
-("gnu" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
-("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+("gnu"          . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+("melpa"        . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
 ("melpa-stable" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")
-("org" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")
-("marmalade" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/marmalade/")
+("org"          . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")
+("marmalade"    . "http://mirrors.tuna.tsinghua.edu.cn/elpa/marmalade/")
 
           gnu 一般是必备的，其它的 elpa 中的包会依赖 gnu 中的包
         melpa 滚动升级，收录了的包的数量最大
@@ -192,14 +184,30 @@ macOS解决shell和emacs路径不统一
       :config
       (exec-path-from-shell-initialize)))
 #+end_src
-** dracula-theme主题
+** themes
+*** monokai-theme
+-#+begin_src emacs-lisp
+  (use-package monokai-theme
+    :ensure t
+    :defer t
+    :init (load-theme 'monokai t))
+-#+end_src
+*** spacemacs-theme
 #+begin_src emacs-lisp
+  (use-package spacemacs-theme
+    :ensure t
+    :defer t
+    :init (load-theme 'spacemacs-dark t))
+#+end_src
+*** dracula-theme
+-#+begin_src emacs-lisp
   (use-package dracula-theme
     :ensure t
+    :defer t
     ;; :pin melpa-stable
-    :config
+    :init
     (load-theme 'dracula t))
-#+end_src
+-#+end_src
 ** which-key
 #+begin_src emacs-lisp
   (use-package which-key
@@ -246,7 +254,8 @@ macOS解决shell和emacs路径不统一
     ;; (setq swiper-action-recenter t)
     ;; (setq swiper-include-line-number-in-search t)
 #+end_src
-** 彩虹括号等
+** rainbow-delimiters
+彩虹括号
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
     :ensure t
@@ -257,13 +266,13 @@ macOS解决shell和emacs路径不统一
     (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 #+end_src
 ** company
+:bind
+(:map company-active-map
+("C-n". company-select-next)
+("C-p". company-select-previous)
+("M-<". company-select-first)
+("M->". company-select-last))
 #+begin_src emacs-lisp
-  ;; :bind
-  ;;   (:map company-active-map
-  ;; 	      ("C-n". company-select-next)
-  ;; 	      ("C-p". company-select-previous)
-  ;; 	      ("M-<". company-select-first)
-  ;; 	      ("M->". company-select-last))
   (use-package company
     :ensure t
     ;;:pin melpa-stable
@@ -283,30 +292,28 @@ macOS解决shell和emacs路径不统一
     (setq company-tooltip-offset-display 'lines)
     (setq company-show-numbers t)
     (setq company-backends
-          '(
-             (company-capf 
+          '((company-capf 
              :with company-yasnippet :separate
              company-dabbrev-code company-gtags
              company-etags company-keywords)
              company-bbdb company-semantic company-cmake
              company-clang company-files
-             company-oddmuse company-dabbrev
-            )))
+             company-oddmuse company-dabbrev)))
 #+end_src
 ** eglot
-#+begin_src emacs-lisp
-  ;;(require 'eglot)
-  ;; 选择服务器
-  ;; (add-to-list 'eglot-server-programs '(foo-mode . ("foo-language-server" "--args")))
-  ;;(add-to-list 'eglot-server-programs '(c-mode . ("clangd")))
-  ;; c语言启动eglot
-  ;;(add-hook 'c-mode-hook 'eglot-ensure)
-  ;; 绑定快捷键
-  ;;(define-key eglot-mode-map (kbd "C-c h") 'eglot-help-at-point)
-  ;;(define-key eglot-mode-map (kbd "C-c C-f") 'eglot-format-buffer)
-  ;;(define-key eglot-mode-map (kbd "<f6>") 'xref-find-definitions)
-  ;;(define-key eglot-mode-map (kbd "C-c o") 'eglot-code-action-organize-imports)
+(require 'eglot)
+选择服务器
+(add-to-list 'eglot-server-programs '(foo-mode . ("foo-language-server" "--args")))
+(add-to-list 'eglot-server-programs '(c-mode . ("clangd")))
+c语言启动eglot
+(add-hook 'c-mode-hook 'eglot-ensure)
+绑定快捷键
+(define-key eglot-mode-map (kbd "C-c h") 'eglot-help-at-point)
+(define-key eglot-mode-map (kbd "C-c C-f") 'eglot-format-buffer)
+(define-key eglot-mode-map (kbd "<f6>") 'xref-find-definitions)
+(define-key eglot-mode-map (kbd "C-c o") 'eglot-code-action-organize-imports)
 
+#+begin_src emacs-lisp
   ;; (use-package eglot
   ;;   :ensure t
   ;;   :defer 1
@@ -390,12 +397,25 @@ macOS解决shell和emacs路径不统一
   (use-package yasnippet
     :ensure t
     ;;:pin melpa-stable
+    ;;:defer 1
     :config
     ;; main mode
     ;;(yas-global-mode 1)
     ;; minor mode
     (yas-reload-all)
-    (add-hook 'prog-mode-hook #'yas-minor-mode))
+    (add-hook 'prog-mode-hook #'yas-minor-mode)
+
+    ;; yasnippet
+    ;; Trigger key
+    (define-key yas-minor-mode-map (kbd "<tab>") nil)
+    (define-key yas-minor-mode-map (kbd "TAB") nil)
+    ;; Bind `SPC' to `yas-expand' when snippet expansion available (it
+    ;; will still call `self-insert-command' otherwise).
+    ;;(define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
+    ;; Bind `C-c y' to `yas-expand' ONLY.
+    (define-key yas-minor-mode-map (kbd "C-<tab>") #'yas-expand)
+    ;;(define-key yas-minor-mode-map (kbd "C-<tab>") #'company-other-backend)
+    )
 #+end_src
 ** yasnippet-snippets
 #+begin_src emacs-lisp
@@ -426,7 +446,7 @@ macOS解决shell和emacs路径不统一
   ;; (add-hook 'haskell-interactive-mode-hook
   ;; 	  (lambda () (linum-mode -1)))
 #+end_src
-** common lisp slime
+** common-lisp-slime
 #+begin_src emacs-lisp
   ;;(use-package slime
   ;;  :config (setq inferior-lisp-program "/usr/bin/sbcl"))
@@ -464,6 +484,14 @@ macOS解决shell和emacs路径不统一
   ;;           (lambda ()
   ;;             ;;(setq indent-tabs-mode 1)
   ;;             (setq tab-width 4)))
+#+end_src
+配置go一些功能
+#+begin_src emacs-lisp
+  ;; go run
+  (defun go-run()
+    (interactive)
+    (eshell)
+    (insert "go run ."))
 
   ;; Set up before-save hooks to format buffer and add/delete imports.
   ;; Make sure you don't have other gofmt/goimports hooks enabled.
@@ -497,7 +525,7 @@ macOS解决shell和emacs路径不统一
   ;;  (setq gdscript-indent-offset 4))
 #+end_src
 ** treemacs
-#+begin_src emacs-lisp
+-#+begin_src emacs-lisp
   (use-package treemacs
     :ensure t
     :defer t
@@ -590,21 +618,15 @@ macOS解决shell和emacs路径不统一
           ;;("C-x t M-t" . treemacs-find-tag)
           )
     )
-#+end_src
+-#+end_src
 ** magit
-#+begin_src emacs-lisp
+-#+begin_src emacs-lisp
   (use-package magit
     :ensure t
     :defer t)
-#+end_src
+-#+end_src
 * 配置编码格式字符编码
 #+begin_src emacs-lisp
-  ;; 这个如果设定了在windows下会出现莫名的乱码不认字体
-  ;; (setq locale-coding-system 'utf-8)
-
-  ;; windows下设定语言环境会出现字体混乱
-  ;; (set-language-environment 'utf-8)
-
   ;; 默认读取文件编码
   (prefer-coding-system 'utf-8)
 
@@ -623,6 +645,12 @@ macOS解决shell和emacs路径不统一
   ;; 文件名
   (set-file-name-coding-system 'utf-8)
 
+  ;; 这个如果设定了在windows下会出现莫名的乱码不认字体
+  ;; (setq locale-coding-system 'utf-8)
+
+  ;; windows下设定语言环境会出现字体混乱
+  ;; (set-language-environment 'utf-8)
+
   ;; 下面两个是设置剪切板的字符集
   ;; 因为windows是utf-16-le所以设置后复制粘贴会出现乱码
   ;;(set-clipboard-coding-system 'utf-8)
@@ -630,16 +658,16 @@ macOS解决shell和emacs路径不统一
 #+end_src
 * 配置字体
 - 字体设计
-Monaco    Source Code Pro    微软雅黑Monaco
-Microsoft YaHei Mono    Fira Code Regular
-Inziu Roboto SC Bold    Inziu Iosevka Slab SC
-Fira Code Regular 10  Source Han Sans
-YaHei Consolas Hybrid
 Noto Sans Mono CJK SC Regular
+YaHei Consolas Hybrid
 Source Han Sans HW SC VF
+Monaco    Source Code Pro    微软雅黑Monaco
+Microsoft YaHei Mono         Fira Code Regular
+Inziu Roboto SC Bold         Inziu Iosevka Slab SC
+Fira Code Regular 10         Source Han Sans
 Sarasa Term Slab SC
-Sarasa Mono Slab SC    Cascadia Code PL SemiBold
-星汉等宽 CN Medium      文泉驿等宽正黑
+Sarasa Mono Slab SC          Cascadia Code PL SemiBold
+星汉等宽 CN Medium           文泉驿等宽正黑
 ** 设置字体和大小
 #+begin_src emacs-lisp
   ;;(set-frame-font "Cascadia Code PL 13")
@@ -743,11 +771,11 @@ Sarasa Mono Slab SC    Cascadia Code PL SemiBold
   ;; 以下设置必须放在load主题后才能很好的生效
   ;;(setq-default cursor-type 'bar)		;;改变光标样式
   ;;(set-cursor-color "#FF8C00")		;;设置光标颜色
-  (set-cursor-color "#fcf16e")		;;设置光标颜色
+  ;;(set-cursor-color "#fcf16e")		;;设置光标颜色
   ;;(set-background-color "black")		;;屏幕黑色背景
   ;;(set-foreground-color "white")		;;屏幕白色前景
   ;;(set-face-background 'region "violet")	;;选中区域背景色
-  (set-face-background 'region "#b7ba6b")	;;选中区域背景色
+  ;;(set-face-background 'region "#b7ba6b")	;;选中区域背景色
 #+end_src
 * 内置包系统差异等配置
 ** 如果是windows就把默认minibuffer打开路径设置为下面的 
@@ -819,7 +847,7 @@ Sarasa Mono Slab SC    Cascadia Code PL SemiBold
      (interactive)
      (save-buffer)
      (kill-emacs)))
-** 开始定义
+** 开始定义 zero-keymap
 #+begin_src emacs-lisp
   ;; 取消原来默认的定义
   (global-unset-key (kbd "M-SPC"))
@@ -833,7 +861,7 @@ Sarasa Mono Slab SC    Cascadia Code PL SemiBold
   ;; 绑定别的keymap
   (define-key zero-keymap (kbd "o") 'facemenu-keymap)
 #+end_src
-** ---绑定 zero-keymap 功能---
+** 开始绑定 zero-keymap
 #+begin_src emacs-lisp
   ;; 在两个之间只留下一个空格
   (define-key zero-keymap (kbd "n") 'just-one-space)
@@ -876,23 +904,12 @@ Sarasa Mono Slab SC    Cascadia Code PL SemiBold
   (define-key zero-keymap (kbd "w'") 'enlarge-window)
   (define-key zero-keymap (kbd "w/") 'balance-windows)
 #+end_src
-** --- 绑定全局功能---
+** 开始绑定 全局功能
 #+begin_src emacs-lisp
   ;; 替换mac下 alt 和 meta 建
   ;;(when *is-mac*
   ;;  (setq mac-command-modifier 'meta)
   ;;  (setq mac-option-modifier 'none))
-
-  ;; yasnippet
-  ;; Trigger key
-  (define-key yas-minor-mode-map (kbd "<tab>") nil)
-  (define-key yas-minor-mode-map (kbd "TAB") nil)
-  ;; Bind `SPC' to `yas-expand' when snippet expansion available (it
-  ;; will still call `self-insert-command' otherwise).
-  ;;(define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
-  ;; Bind `C-c y' to `yas-expand' ONLY.
-  (define-key yas-minor-mode-map (kbd "C-<tab>") #'yas-expand)
-  ;;(define-key yas-minor-mode-map (kbd "C-<tab>") #'company-other-backend)
 
   ;; 多窗口切换分屏控制
   (global-set-key (kbd "M-o") 'other-window)
