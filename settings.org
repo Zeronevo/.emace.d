@@ -145,7 +145,7 @@
           ("melpa"            . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
           ("melpa-stable"	. "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 #+end_src
-* 安装包管理配置
+* 配置包管理软件
 #+begin_src emacs-lisp
   ;; 含有自动加载(###,,,autoload)，不加载也能使用
   ;;(require 'package)
@@ -313,7 +313,7 @@ c语言启动eglot
 (define-key eglot-mode-map (kbd "<f6>") 'xref-find-definitions)
 (define-key eglot-mode-map (kbd "C-c o") 'eglot-code-action-organize-imports)
 
-#+begin_src emacs-lisp
+-#+begin_src emacs-lisp
   ;; (use-package eglot
   ;;   :ensure t
   ;;   :defer 1
@@ -327,7 +327,7 @@ c语言启动eglot
   ;;   (add-hook 'before-save-hook #'eglot-format-buffer -10 t)
   ;;   (add-hook 'before-save-hook #'eglot-code-action-organize-imports -10 t))
   ;; (add-hook 'go-mode-hook #'eglot-format-buffer-on-save)
-#+end_src
+-#+end_src
 ** lsp
 #+begin_src emacs-lisp
   (use-package lsp-mode
@@ -340,7 +340,7 @@ c语言启动eglot
     :commands (lsp lsp-deferred)
     :hook (go-mode . lsp-deferred)
     :hook (c-mode . lsp-deferred)
-    :hook (c++-mode . lsp-deferred)
+    ;;:hook (c++-mode . lsp-deferred)
     ;;:hook (gdscript-mode . lsp-deferred)
     ;;:hook (rust-mode . lsp-deferred)
     ;;:hook (haskell-mode . lsp-deferred)
@@ -386,12 +386,12 @@ c语言启动eglot
     :defer t)
 #+end_src
 ** flycheck-rust
-#+begin_src emacs-lisp
+-#+begin_src emacs-lisp
   ;; (use-package flycheck-rust
   ;;   :ensure t
   ;;   ;;:pin melpa-stable
   ;;   :defer 1)
-#+end_src
+-#+end_src
 ** yasnippet
 #+begin_src emacs-lisp
   (use-package yasnippet
@@ -426,14 +426,14 @@ c语言启动eglot
     :after (yasnippet))
 #+end_src
 ** haskell
-#+begin_src emacs-lisp
+-#+begin_src emacs-lisp
   ;; (use-package haskell-mode
   ;;   :ensure t
   ;;   :defer 1
   ;;   )
-#+end_src
-** lsp-haskell
-#+begin_src emacs-lisp
+-#+end_src
+lsp-haskell
+-#+begin_src emacs-lisp
   ;; (use-package lsp-haskell
   ;;   :ensure t
   ;;   :defer 1
@@ -445,14 +445,14 @@ c语言启动eglot
 
   ;; (add-hook 'haskell-interactive-mode-hook
   ;; 	  (lambda () (linum-mode -1)))
-#+end_src
+-#+end_src
 ** common-lisp-slime
-#+begin_src emacs-lisp
+-#+begin_src emacs-lisp
   ;;(use-package slime
   ;;  :config (setq inferior-lisp-program "/usr/bin/sbcl"))
-#+end_src
+-#+end_src
 ** rust
-#+begin_src emacs-lisp
+-#+begin_src emacs-lisp
   ;; (use-package rust-mode
   ;;   :ensure t
   ;;   :defer t
@@ -460,14 +460,14 @@ c语言启动eglot
   ;;   (setq rust-format-on-save t)
   ;;   (define-key rust-mode-map (kbd "C-c C-c") 'rust-run)
   ;;   )
-#+end_src
+-#+end_src
 ** racket
-#+begin_src emacs-lisp
+-#+begin_src emacs-lisp
   ;; (use-package racket-mode
   ;;   :ensure t
   ;;   :disabled
   ;;   :defer 1)
-#+end_src
+-#+end_src
 ** golang
 #+begin_src emacs-lisp
   (use-package go-mode
@@ -515,7 +515,7 @@ c语言启动eglot
     (apply original-function args)))
   ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
   (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
-#+begin_src emacs-lisp
+-#+begin_src emacs-lisp
   ;;(use-package gdscript-mode
   ;;  :ensure t
   ;;  :config
@@ -523,7 +523,7 @@ c语言启动eglot
   ;;  ;;(setq gdscript-godot-executable "D:/ProgramFilese/godot.exe")
   ;;  (setq gdscript-use-tab-indents t)
   ;;  (setq gdscript-indent-offset 4))
-#+end_src
+-#+end_src
 ** treemacs
 -#+begin_src emacs-lisp
   (use-package treemacs
@@ -625,6 +625,15 @@ c语言启动eglot
     :ensure t
     :defer t)
 -#+end_src
+** c-mode-config
+设置 lsp-format-buffer 缩进为 4 个空格
+在 ~ 家目录创建文件 .clang-format 里面的内容： IndentWidth: 4
+#+begin_src emacs-lisp
+  (defun lsp-c-mode-hooks ()
+    (setq c-basic-offset 4)
+    (add-hook 'before-save-hook #'lsp-format-buffer))
+  (add-hook 'c-mode-hook #'lsp-c-mode-hooks)
+#+end_src
 * 配置编码格式字符编码
 #+begin_src emacs-lisp
   ;; 默认读取文件编码
