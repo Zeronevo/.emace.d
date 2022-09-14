@@ -1,20 +1,72 @@
 #+TITLE: init
 #+STARTUP: overview
 * 初始化
-** 添加路径 require 文件, 不是文件加载方式所以不需要
-#+begin_src emacs-lisp
-  ;;(add-to-list 'load-path (expand-file-name (concat user-emacs-directory "etc")))
+** init.el
+;;; package --- init file
+;;; Commentary:
+;;; Code:
+
+...这里填写配置内容...
+配置文件的结尾需要添加 (provide 'commons-cfg) 来自动加载
+
+;;; init.el ends here
+*** 使用 文件加载方式管理 emacs 配置文件
+;;;; ------------------------------------
+;;;; 初始化
+;;;; ------------------------------------
+
+;; 添加路径 require 文件
+(add-to-list 'load-path (expand-file-name (concat user-emacs-directory "etc")))
+
+;; 当用户手动从Emacs中修改设置，系统自动生成的文件放到下面目录
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+
+;; 当有系统自动生成文件时，加载它
+(when (file-exists-p custom-file) (load-file custom-file))
+
+;; 不进行签名检查
+;;(setq package-check-signature nil)
+
+;;;; ------------------------------------
+;;;; 加载各种单独的配置文件
+;;;; ------------------------------------
+
+(require 'me-package)              ;; 加载自定义函数变量包
+(require 'melpa-cfg)               ;; 配置软件源安装包管理工具 use-package
+(require 'packages-install-cfg)    ;; 安装软件包并且配置
+(require 'programs-install-cfg)    ;; 安装编程语言相关包
+;;(require 'pyim-install-cfg)      ;; 安装 Emacs 内置输入法
+(require 'coding-systems-cfg)      ;; 配置编码格式
+(require 'fonts-cfg)               ;; 配置字体
+(require 'commons-cfg)             ;; 界面设定等通用配置
+(require 'others-cfg)              ;; 内置包系统差异等配置
+(require 'key-bindings-cfg)        ;; 自定义快捷键绑定
+;;(require 'lsp-racket)            ;; 参考使用 lsp 不支持 racket
+*** 使用 org-mode 文学编程管理 emacs 配置文件
+;; 第一种方式
+(org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org"))
+
+;; 第二种方式
+;; (require 'org)
+(org-babel-load-file
+    (expand-file-name "settings.org" user-emacs-directory))
+** 添加文件路径
+require 文件
+不是文件加载方式,也不需要加载某些文件
+#+begin_src emacs-lisp--
+  (add-to-list 'load-path (expand-file-name (concat user-emacs-directory "etc")))
 #+end_src
-** 当用户手动从Emacs中修改设置
+** 系统自动生成文件
+当用户手动从 Emacs 中修改设置时
+系统自动生成的文件放到下面目录
+当有系统自动生成文件时，加载它
 #+begin_src emacs-lisp
-  ;; 系统自动生成的文件放到下面目录
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-  ;; 当有系统自动生成文件时，加载它
   (when (file-exists-p custom-file) (load-file custom-file))
 #+end_src
 ** 不进行签名检查
-#+begin_src emacs-lisp
-  ;;(setq package-check-signature nil)
+#+begin_src emacs-lisp--
+  (setq package-check-signature nil)
 #+end_src
 * 自定义函数变量
 ** 自定义变量
@@ -34,27 +86,26 @@
     (find-file user-init-file))
 #+end_src
 *** 复制当前行或选中的区域
-#+begin_src emacs-lisp
-  ;; (defun zero-copy-line-or-region()
-  ;;   (interactive)
-  ;;   (if mark-active
-  ;;       (kill-ring-save (region-beginning)
-  ;; 		      (region-end))
-  ;;     (progn
-  ;;       (kill-ring-save (line-beginning-position)
-  ;; 		      (line-end-position))
-  ;;       (message "copied line"))))
+#+begin_src emacs-lisp--
+  (defun zero-copy-line-or-region()
+    (interactive)
+    (if mark-active
+        (kill-ring-save (region-beginning)
+                        (region-end))
+      (progn
+        (kill-ring-save (line-beginning-position)
+                        (line-end-position))
+        (message "copied line"))))
 #+end_src
 *** 复制一行到当前行下面
+(line-beginning-position)  (line-end-position))
+(move-beginning-of-line 1) (set-mark-command nil)
+(move-end-of-line 1)
+(kill-ring-save (region-beginning) (region-end))
 #+begin_src emacs-lisp
-  ;; (line-beginning-position) (line-end-position))
   (defun zero-duplicate-line()
     (interactive)
     (let ((col (current-column)))
-      ;;(move-beginning-of-line 1)
-      ;;(set-mark-command nil)
-      ;;(move-end-of-line 1)
-      ;;(kill-ring-save (region-beginning) (region-end))
       (kill-ring-save (line-beginning-position) (line-end-position))
       (move-end-of-line 1)
       (newline)
@@ -111,17 +162,17 @@
     (message (car zero-current-font)))
 #+end_src
 *** 手动切换中文和日文输入法
-#+begin_src emacs-lisp
-  ;; (defun zero-cycle-input-method()
-  ;;   "Cycle input in emacs"
-  ;;   (interactive)
-  ;;   (or (boundp 'zero-input-list)
-  ;;       (setq zero-input-list '("japanese-katakana" "chinese-py" "japanese")
-  ;; 	    zero-current-input zero-input-list))
-  ;;   (if (null (cdr zero-current-input))
-  ;;       (setq zero-current-input zero-input-list)
-  ;;     (setq zero-current-input (cdr zero-current-input)))
-  ;;   (set-input-method (car zero-current-input)))
+#+begin_src emacs-lisp--
+  (defun zero-cycle-input-method()
+    "Cycle input in emacs"
+    (interactive)
+    (or (boundp 'zero-input-list)
+        (setq zero-input-list '("japanese-katakana" "chinese-py" "japanese")
+              zero-current-input zero-input-list))
+    (if (null (cdr zero-current-input))
+        (setq zero-current-input zero-input-list)
+      (setq zero-current-input (cdr zero-current-input)))
+    (set-input-method (car zero-current-input)))
 #+end_src
 * 配置软件源镜像
 初始的 gnu 源 melpa emacs
@@ -134,11 +185,11 @@
 ("org"          . "http://mirrors.tuna.tsinghua.edu.cn/elpa/org/")
 ("marmalade"    . "http://mirrors.tuna.tsinghua.edu.cn/elpa/marmalade/")
 
-          gnu 一般是必备的，其它的 elpa 中的包会依赖 gnu 中的包
-        melpa 滚动升级，收录了的包的数量最大
- melpa-stable 依据源码的 Tag （Git）升级，数量比 melpa 少，因为很多包作者根本不打 Tag
-          org 仅仅为了 org-plus-contrib 这一个包，org 重度用户使用
-    marmalade 似乎已经不维护了，个人不推荐
+          gnu   一般是必备的，其它的 elpa 中的包会依赖 gnu 中的包
+        melpa   滚动升级，收录了的包的数量最大
+ melpa-stable   依据源码的 Tag （Git）升级，数量比 melpa 少，因为很多包作者根本不打 Tag
+          org   仅仅为了 org-plus-contrib 这一个包，org 重度用户使用
+    marmalade   似乎已经不维护了，个人不推荐
 #+begin_src emacs-lisp
   (setq package-archives
         '(("gnu"		. "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
@@ -146,120 +197,112 @@
           ("melpa-stable"	. "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 #+end_src
 * 配置包管理软件
-#+begin_src emacs-lisp
-  ;; 含有自动加载(###,,,autoload)，不加载也能使用
-  ;;(require 'package)
+含有自动加载(###,,,autoload)，不加载也能使用
+(require 'package)
+  
+加载包管理工具 use-package
+(require 'use-package)
 
-  ;; 初始化包管理文件，貌似新版本也自动初始化
+配置包管理工具 use-package
+(setq use-package-always-ensure t)
+(setq use-package-always-pin "melpa-stable")
+(setq use-package-always-defer t)
+(setq use-package-always-demand t)
+(setq use-package-expand-minimally t)
+(setq use-package-verbose t)
+
+使用说明
+(use-package monokai-theme
+    :ensure t
+    :pin melpa-stable
+    :defer t
+    :init (load-theme 'monokai t)
+    :after (ivy)
+    :bind (("M-x" . counsel-M-x))
+    :config)
+    
+初始化包管理文件，貌似新版本也自动初始化
+刷新软件源
+安装包管理工具 use-package
+#+begin_src emacs-lisp
   (unless (bound-and-true-p package-initialized)
     (package-initialize))
 
-  ;; 刷新软件源
   (unless package-archive-contents (package-refresh-contents))
 
-  ;; 安装包管理工具 use-package
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
-
-  ;; 加载包管理工具 use-package
-  ;;(require 'use-package)
-
-  ;; 配置包管理工具 use-package
-  ;;(setq use-package-always-ensure t)
-  ;;(setq use-package-always-pin "melpa-stable")
-  ;;(setq use-package-always-defer t)
-  ;;(setq use-package-always-demand t)
-  ;;(setq use-package-expand-minimally t)
-  ;;(setq use-package-verbose t)
 #+end_src
 * 安装软件包并且配置
 ** exec-path-from-shell
 macOS解决shell和emacs路径不统一
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp--
   (when (memq window-system '(mac ns))
     (use-package exec-path-from-shell
       :ensure t
-      ;; :pin melpa-stable
       :config
       (exec-path-from-shell-initialize)))
 #+end_src
 ** themes
-*** monokai-theme
+monokai-theme 'monokai
+spacemacs-theme 'spacemacs-dark
+dracula-theme 'dracula
 #+begin_src emacs-lisp
   (use-package monokai-theme
     :ensure t
     :defer t
     :init (load-theme 'monokai t))
 #+end_src
-*** spacemacs-theme
--#+begin_src emacs-lisp
-  (use-package spacemacs-theme
-    :ensure t
-    :defer t
-    :init (load-theme 'spacemacs-dark t))
--#+end_src
-*** dracula-theme
--#+begin_src emacs-lisp
-  (use-package dracula-theme
-    :ensure t
-    :defer t
-    ;; :pin melpa-stable
-    :init
-    (load-theme 'dracula t))
--#+end_src
 ** which-key
 #+begin_src emacs-lisp
   (use-package which-key
     :ensure t
-    ;; :pin melpa-stable
     :config
     (which-key-mode))
 #+end_src
 ** ivy
+(setq ivy-use-virtual-buffers t)
+(setq ivy-initial-inputs-alist nil)
+(setq enable-recursive-minibuffers t)
+(setq ivy-re-builders-alist '((t . ivy--regex-ignore-order))))
 #+begin_src emacs-lisp
   (use-package ivy
     :ensure t
-    ;; :pin melpa-stable
     :config
     (ivy-mode)
-    ;; (setq ivy-use-virtual-buffers t)
-    ;; (setq ivy-initial-inputs-alist nil)
-    ;; (setq enable-recursive-minibuffers t)
-    ;; (setq ivy-re-builders-alist '((t . ivy--regex-ignore-order))))
     (setq ivy-count-format "(%d/%d) "))
 #+end_src
 ** counsel
+:bind
+("C-c g" . counsel-git)
+("C-c f" . counsel-recentf)
 #+begin_src emacs-lisp
   (use-package counsel
     :ensure t
-    ;; :pin melpa-stable
     :after (ivy)
     :bind (("M-x" . counsel-M-x)
-           ;;("C-c g" . counsel-git)
-           ;;("C-c f" . counsel-recentf)
            ("C-x b" . counsel-switch-buffer)
            ("C-x C-b" . ibuffer)
            ("C-x C-f" . counsel-find-file)))
 #+end_src
 ** swiper
+:bind 
+("C-r" . swiper-isearch-backward)
+:config
+(setq swiper-action-recenter t)
+(setq swiper-include-line-number-in-search t)
 #+begin_src emacs-lisp
   (use-package swiper
     :ensure t
-    ;; :pin melpa-stable
     :after (ivy)
-    :bind (;;("C-r" . swiper-isearch-backward)
-           ("C-s" . swiper)))
-    ;; :config
-    ;; (setq swiper-action-recenter t)
-    ;; (setq swiper-include-line-number-in-search t)
+    :bind (("C-s" . swiper)))
 #+end_src
 ** rainbow-delimiters
 彩虹括号
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
     :ensure t
-    ;; :pin melpa-stable
     :defer 1
     :config
     (rainbow-delimiters-mode)
@@ -272,21 +315,21 @@ macOS解决shell和emacs路径不统一
 ("C-p". company-select-previous)
 ("M-<". company-select-first)
 ("M->". company-select-last))
+:config
+(setq company-begin-commands '(self-insert-command))
+(setq company-tooltip-limit 20)
+(setq company-require-match nil)
+(setq company-dabbrev-ignore-case t)
+(setq company-dabbrev-downcase nil)
+(setq company-dabbrev-other-buffers 'all)
+(setq company-dabbrev-code-everywhere t)
+(setq company-dabbrev-code-modes t)
+(setq company-dabbrev-code-other-buffers 'all)
 #+begin_src emacs-lisp
   (use-package company
     :ensure t
-    ;;:pin melpa-stable
     :config
     (add-hook 'after-init-hook 'global-company-mode)
-    ;;(setq company-begin-commands '(self-insert-command))
-    ;;(setq company-tooltip-limit 20)
-    ;;(setq company-require-match nil)
-    ;;(setq company-dabbrev-ignore-case t)
-    ;;(setq company-dabbrev-downcase nil)
-    ;;(setq company-dabbrev-other-buffers 'all)
-    ;;(setq company-dabbrev-code-everywhere t)
-    ;;(setq company-dabbrev-code-modes t)
-    ;;(setq company-dabbrev-code-other-buffers 'all)
     (setq company-minimum-prefix-length 1)
     (setq company-idle-delay 0.0)
     (setq company-tooltip-offset-display 'lines)
@@ -313,55 +356,58 @@ c语言启动eglot
 (define-key eglot-mode-map (kbd "<f6>") 'xref-find-definitions)
 (define-key eglot-mode-map (kbd "C-c o") 'eglot-code-action-organize-imports)
 
--#+begin_src emacs-lisp
-  ;; (use-package eglot
-  ;;   :ensure t
-  ;;   :defer 1
-  ;;   :config
-  ;;   (add-to-list 'eglot-server-programs '(rust-mode . ("rust-analyzer")))
-  ;;   (add-hook 'rust-mode-hook 'eglot-ensure))
-  ;;   ;; golang
-  ;;   (add-hook 'go-mode-hook 'eglot-ensure))
+#+begin_src emacs-lisp--
+  (use-package eglot
+    :ensure t
+    :defer 1
+    :config
+    (add-to-list 'eglot-server-programs '(rust-mode . ("rust-analyzer")))
+    (add-hook 'rust-mode-hook 'eglot-ensure))
 
-  ;; (defun eglot-format-buffer-on-save ()
-  ;;   (add-hook 'before-save-hook #'eglot-format-buffer -10 t)
-  ;;   (add-hook 'before-save-hook #'eglot-code-action-organize-imports -10 t))
-  ;; (add-hook 'go-mode-hook #'eglot-format-buffer-on-save)
--#+end_src
+  (add-hook 'go-mode-hook 'eglot-ensure)
+
+  (defun eglot-format-buffer-on-save ()
+    (add-hook 'before-save-hook #'eglot-format-buffer -10 t)
+    (add-hook 'before-save-hook #'eglot-code-action-organize-imports -10 t))
+  
+  (add-hook 'go-mode-hook #'eglot-format-buffer-on-save)
+#+end_src
 ** lsp
+:hook (c++-mode . lsp-deferred)
+:hook (gdscript-mode . lsp-deferred)
+:hook (rust-mode . lsp-deferred)
+:hook (haskell-mode . lsp-deferred)
+:hook (racket-mode . lsp-deferred)
+
+:custom
+(lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
+(lsp-rust-analyzer-display-parameter-hints nil)
+(lsp-rust-analyzer-display-reborrow-hints nil)
+
+:config
+(setq lsp-modeline-diagnostics-enable t) ;;Project errors on modeline
+(setq lsp-headerline-breadcrumb-enable-symbol-numbers t)
+(setq lsp-idle-delay 0.500)
+(setq lsp-log-io nil) ;;if set to true can cause a performance hit
+(setq lsp-enable-file-watchers nil)
 #+begin_src emacs-lisp
   (use-package lsp-mode
     :ensure t
-    ;;:pin melpa-stable
     :defer t
     :init
-    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
     (setq lsp-keymap-prefix "C-c l")
     :commands (lsp lsp-deferred)
     :hook (go-mode . lsp-deferred)
     :hook (c-mode . lsp-deferred)
-    ;;:hook (c++-mode . lsp-deferred)
-    ;;:hook (gdscript-mode . lsp-deferred)
-    ;;:hook (rust-mode . lsp-deferred)
-    ;;:hook (haskell-mode . lsp-deferred)
-    ;;:hook (racket-mode . lsp-deferred)
     :custom
     (lsp-rust-analyzer-server-display-inlay-hints t)
     (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
     (lsp-rust-analyzer-display-chaining-hints t)
     (lsp-rust-analyzer-display-closure-return-type-hints t)
-    ;;(lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
-    ;;(lsp-rust-analyzer-display-parameter-hints nil)
-    ;;(lsp-rust-analyzer-display-reborrow-hints nil)
     :config
     (setq gc-cons-threshold 100000000)
     (setq read-process-output-max (* 1024 1024)) ;; 1mb
     (setq lsp-modeline-code-actions-segments '(count icon name))
-    ;;(setq lsp-modeline-diagnostics-enable t) ;;Project errors on modeline
-    ;;(setq lsp-headerline-breadcrumb-enable-symbol-numbers t)
-    ;;(setq lsp-idle-delay 0.500)
-    ;;(setq lsp-log-io nil) ;;if set to true can cause a performance hit
-    ;;(setq lsp-enable-file-watchers nil)
     (setq lsp-signature-render-documentation nil) ;; 关闭在minibuffer的用eldoc显示的文档
     (setq lsp-completion-provider :none) ;; lsp会自动设置company的backends，需要禁止此功能
     )
@@ -370,7 +416,6 @@ c语言启动eglot
 #+begin_src emacs-lisp
   (use-package lsp-ui
     :ensure t
-    ;;:after (lsp)
     :defer t
     :custom
     (lsp-ui-peek-always-show t)
@@ -382,109 +427,106 @@ c语言启动eglot
 #+begin_src emacs-lisp
   (use-package flycheck
     :ensure t
-    ;;:pin melpa-stable
     :defer t)
 #+end_src
 ** flycheck-rust
--#+begin_src emacs-lisp
-  ;; (use-package flycheck-rust
-  ;;   :ensure t
-  ;;   ;;:pin melpa-stable
-  ;;   :defer 1)
--#+end_src
+#+begin_src emacs-lisp--
+  (use-package flycheck-rust
+    :ensure t
+    :defer 1)
+#+end_src
 ** yasnippet
+:config
+;; main mode
+(yas-global-mode 1)
+;; minor mode
+(yas-reload-all)
+(add-hook 'prog-mode-hook #'yas-minor-mode)
+
+;; yasnippet
+;; Trigger key
+(define-key yas-minor-mode-map (kbd "<tab>") nil)
+(define-key yas-minor-mode-map (kbd "TAB") nil)
+
+;; Bind `SPC' to `yas-expand' when snippet expansion available (it
+;; will still call `self-insert-command' otherwise).
+(define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
+
+;; Bind `C-c y' to `yas-expand' ONLY.
+(define-key yas-minor-mode-map (kbd "C-<tab>") #'yas-expand)
+(define-key yas-minor-mode-map (kbd "C-<tab>") #'company-other-backend)
 #+begin_src emacs-lisp
   (use-package yasnippet
     :ensure t
-    ;;:pin melpa-stable
-    ;;:defer 1
     :config
-    ;; main mode
-    ;;(yas-global-mode 1)
-    ;; minor mode
     (yas-reload-all)
     (add-hook 'prog-mode-hook #'yas-minor-mode)
-
-    ;; yasnippet
-    ;; Trigger key
     (define-key yas-minor-mode-map (kbd "<tab>") nil)
     (define-key yas-minor-mode-map (kbd "TAB") nil)
-    ;; Bind `SPC' to `yas-expand' when snippet expansion available (it
-    ;; will still call `self-insert-command' otherwise).
-    ;;(define-key yas-minor-mode-map (kbd "SPC") yas-maybe-expand)
-    ;; Bind `C-c y' to `yas-expand' ONLY.
-    (define-key yas-minor-mode-map (kbd "C-<tab>") #'yas-expand)
-    ;;(define-key yas-minor-mode-map (kbd "C-<tab>") #'company-other-backend)
-    )
+    (define-key yas-minor-mode-map (kbd "C-<tab>") #'yas-expand))
 #+end_src
 ** yasnippet-snippets
 #+begin_src emacs-lisp
   (use-package yasnippet-snippets
     :ensure t
-    ;;:pin melpa-stable
-    ;;:defer 1
     :after (yasnippet))
 #+end_src
 ** haskell
--#+begin_src emacs-lisp
-  ;; (use-package haskell-mode
-  ;;   :ensure t
-  ;;   :defer 1
-  ;;   )
--#+end_src
-lsp-haskell
--#+begin_src emacs-lisp
-  ;; (use-package lsp-haskell
-  ;;   :ensure t
-  ;;   :defer 1
-  ;;   )
+#+begin_src emacs-lisp--
+  (use-package haskell-mode
+    :ensure t
+    :defer 1)
+#+end_src
+** lsp-haskell
+#+begin_src emacs-lisp--
+  (use-package lsp-haskell
+    :ensure t
+    :defer 1)
 
-  ;; (defun lsp-haskell-install-save-hooks ()
-  ;;   (add-hook 'before-save-hook #'lsp-format-buffer))
-  ;; (add-hook 'haskell-mode-hook #'lsp-haskell-install-save-hooks)
+  (defun lsp-haskell-install-save-hooks ()
+    (add-hook 'before-save-hook #'lsp-format-buffer))
+  (add-hook 'haskell-mode-hook #'lsp-haskell-install-save-hooks)
 
-  ;; (add-hook 'haskell-interactive-mode-hook
-  ;; 	  (lambda () (linum-mode -1)))
--#+end_src
+  (add-hook 'haskell-interactive-mode-hook
+            (lambda () (linum-mode -1)))
+#+end_src
 ** common-lisp-slime
--#+begin_src emacs-lisp
-  ;;(use-package slime
-  ;;  :config (setq inferior-lisp-program "/usr/bin/sbcl"))
--#+end_src
+#+begin_src emacs-lisp--
+  (use-package slime
+    :config (setq inferior-lisp-program "/usr/bin/sbcl"))
+#+end_src
 ** rust
--#+begin_src emacs-lisp
-  ;; (use-package rust-mode
-  ;;   :ensure t
-  ;;   :defer t
-  ;;   :config
-  ;;   (setq rust-format-on-save t)
-  ;;   (define-key rust-mode-map (kbd "C-c C-c") 'rust-run)
-  ;;   )
--#+end_src
+#+begin_src emacs-lisp--
+  (use-package rust-mode
+    :ensure t
+    :defer t
+    :config
+    (setq rust-format-on-save t)
+    (define-key rust-mode-map (kbd "C-c C-c") 'rust-run))
+#+end_src
 ** racket
--#+begin_src emacs-lisp
-  ;; (use-package racket-mode
-  ;;   :ensure t
-  ;;   :disabled
-  ;;   :defer 1)
--#+end_src
+#+begin_src emacs-lisp--
+  (use-package racket-mode
+    :ensure t
+    :disabled
+    :defer 1)
+#+end_src
 ** golang
+:config
+(setq gofmt-command "goimports")
+(add-hook 'before-save-hook 'gofmt-before-save)
+
+;; go-mode default tab is 8, now set to 4
+(add-hook 'go-mode-hook
+    (lambda ()
+    ;;(setq indent-tabs-mode 1)
+    (setq tab-width 4)))
 #+begin_src emacs-lisp
   (use-package go-mode
     :ensure t
-    ;; :pin melpa
     :defer t)
-
-  ;;:config
-  ;;(setq gofmt-command "goimports")
-  ;;(add-hook 'before-save-hook 'gofmt-before-save)
-
-  ;; go-mode default tab is 8, now set to 4
-  ;; (add-hook 'go-mode-hook
-  ;;           (lambda ()
-  ;;             ;;(setq indent-tabs-mode 1)
-  ;;             (setq tab-width 4)))
 #+end_src
+
 配置go一些功能
 #+begin_src emacs-lisp
   ;; go run
@@ -503,10 +545,10 @@ lsp-haskell
   (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 #+end_src
 ** godot
-  (defun lsp--gdscript-ignore-errors (original-function &rest args)
+(defun lsp--gdscript-ignore-errors (original-function &rest args)
   "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
   (if (string-equal major-mode "gdscript-mode")
-      (let ((json-data (nth 0 args)))
+  (let ((json-data (nth 0 args)))
         (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
                  (not (gethash "id" json-data nil))
                  (not (gethash "method" json-data nil)))
@@ -515,17 +557,18 @@ lsp-haskell
     (apply original-function args)))
   ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
   (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
--#+begin_src emacs-lisp
-  ;;(use-package gdscript-mode
-  ;;  :ensure t
-  ;;  :config
-  ;;  ;;(setq gdscript-gdformat-save-and-format t)
-  ;;  ;;(setq gdscript-godot-executable "D:/ProgramFilese/godot.exe")
-  ;;  (setq gdscript-use-tab-indents t)
-  ;;  (setq gdscript-indent-offset 4))
--#+end_src
+  
+#+begin_src emacs-lisp--
+  (use-package gdscript-mode
+    :ensure t
+    :config
+    ;;(setq gdscript-gdformat-save-and-format t)
+    ;;(setq gdscript-godot-executable "D:/ProgramFilese/godot.exe")
+    (setq gdscript-use-tab-indents t)
+    (setq gdscript-indent-offset 4))
+#+end_src
 ** treemacs
--#+begin_src emacs-lisp
+#+begin_src emacs-lisp--
   (use-package treemacs
     :ensure t
     :defer t
@@ -618,23 +661,55 @@ lsp-haskell
           ;;("C-x t M-t" . treemacs-find-tag)
           )
     )
--#+end_src
+#+end_src
 ** magit
--#+begin_src emacs-lisp
+#+begin_src emacs-lisp--
   (use-package magit
     :ensure t
     :defer t)
--#+end_src
+#+end_src
 ** c-mode-config
-设置 lsp-format-buffer 缩进为 4 个空格
-在 ~ 家目录创建文件 .clang-format 里面的内容： IndentWidth: 4
+*** lsp-format-buffer
+在 ~ 家目录创建文件 .clang-format 以下是文件的内容：
+
+---
+BasedOnStyle: llvm
+
+#AllowShortBlocksOnASingleLine: Empty
+#AllowAllParametersOfDeclarationOnNextLine: true
+#AllowShortIfStatementsOnASingleLine: true
+AlignArrayOfStructures: Left
+AllowShortFunctionsOnASingleLine: Empty
+
+#tab键盘的宽度
+#TabWidth: 4
+
+#缩进宽度
+IndentWidth: 4
+
+#指针和引用的对齐: Left, Right, Middle
+PointerAlignment:   Middle
+
+#UseTab: Never
+*** config
 #+begin_src emacs-lisp
   (defun lsp-c-mode-hooks ()
     (setq c-basic-offset 4)
+    (c-toggle-comment-style -1)
     (add-hook 'before-save-hook #'lsp-format-buffer))
   (add-hook 'c-mode-hook #'lsp-c-mode-hooks)
 #+end_src
 * 配置编码格式字符编码
+;; 这个如果设定了在windows下会出现莫名的乱码不认字体
+(setq locale-coding-system 'utf-8)
+
+;; windows下设定语言环境会出现字体混乱
+(set-language-environment 'utf-8)
+
+;; 下面两个是设置剪切板的字符集
+;; 因为windows是utf-16-le所以设置后复制粘贴会出现乱码
+(set-clipboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
 #+begin_src emacs-lisp
   ;; 默认读取文件编码
   (prefer-coding-system 'utf-8)
@@ -653,20 +728,9 @@ lsp-haskell
 
   ;; 文件名
   (set-file-name-coding-system 'utf-8)
-
-  ;; 这个如果设定了在windows下会出现莫名的乱码不认字体
-  ;; (setq locale-coding-system 'utf-8)
-
-  ;; windows下设定语言环境会出现字体混乱
-  ;; (set-language-environment 'utf-8)
-
-  ;; 下面两个是设置剪切板的字符集
-  ;; 因为windows是utf-16-le所以设置后复制粘贴会出现乱码
-  ;;(set-clipboard-coding-system 'utf-8)
-  ;;(set-selection-coding-system 'utf-8)
 #+end_src
 * 配置字体
-- 字体设计
+字体设计
 YaHei Consolas Hybrid
 Source Han Sans HW SC VF
 Monaco    Source Code Pro    微软雅黑Monaco
@@ -681,9 +745,9 @@ Noto Sans Mono CJK SC Regular  -- 等宽等高中英文
 Xiaolai Mono SC                -- 中文 26
 SauceCodePro Nerd Font Mono    -- 英文 13
 ** 设置字体和大小
-#+begin_src emacs-lisp
-  ;;(set-frame-font "Cascadia Code PL 13")
-  ;;(set-frame-font "Fira Code Regular 13")
+#+begin_src emacs-lisp--
+  (set-frame-font "Cascadia Code PL 13")
+  (set-frame-font "Fira Code Regular 13")
 #+end_src
 ** 单独设置英文字体
 #+begin_src emacs-lisp
@@ -698,89 +762,92 @@ SauceCodePro Nerd Font Mono    -- 英文 13
                       (font-spec :family "Xiaolai Mono SC" :size 26)))
 #+end_src
 ** 设置不同字体比例
-#+begin_src emacs-lisp
-  ;; (setq face-font-rescale-alist
-  ;;      '(("Fira Code" . (/ 20 12.0))
-  ;;        ("Inziu Iosevka SC" . 1.2)
-  ;;        ("Source Han Sans" . 1.2)))
+#+begin_src emacs-lisp--
+  (setq face-font-rescale-alist
+        '(("Fira Code" . (/ 20 12.0))
+          ("Inziu Iosevka SC" . 1.2)
+          ("Source Han Sans" . 1.2)))
 #+end_src
 ** 选择性的设置
-#+begin_src emacs-lisp
-  ;;(if *is-windows*
-  ;;    (progn
-  ;;      (set-face-attribute 'default nil :font "Source Code Pro 12")
-  ;;      (dolist (charset '(kana han symbol cjk-misc bopomofo))
-  ;;	(set-fontset-font (frame-parameter nil 'font)
-  ;;			  charset (font-spec :family "Inziu Iosevka SC" :size 22))))
-  ;;  (set-face-attribute 'default nil :font "Source Code Pro 12"))
+#+begin_src emacs-lisp--
+  (if *is-windows*
+      (progn
+        (set-face-attribute 'default nil :font "Source Code Pro 12")
+        (dolist (charset '(kana han symbol cjk-misc bopomofo))
+          (set-fontset-font (frame-parameter nil 'font)
+                            charset (font-spec :family "Inziu Iosevka SC" :size 22))))
+    (set-face-attribute 'default nil :font "Source Code Pro 12"))
 
-  ;; (set-face-attribute 'default nil :font
-  ;;                     (format   "%s:pixelsize=%d" "Fira Code Regular" 20))
-  ;; (dolist (charset '(kana han cjk-misc bopomofo))
-  ;;   (set-fontset-font (frame-parameter nil 'font) charset
-  ;;                     (font-spec :family "Source Han Sans" :size 20)))
+  (set-face-attribute 'default nil :font
+                      (format   "%s:pixelsize=%d" "Fira Code Regular" 20))
+  (dolist (charset '(kana han cjk-misc bopomofo))
+    (set-fontset-font (frame-parameter nil 'font) charset
+                      (font-spec :family "Source Han Sans" :size 20)))
 #+end_src
 ** 设定行间距
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp--
   ;; 如果设置为整数，行间距是像素个数，如果是浮点数将会被视作相对倍数。
-  ;;(setq line-spacing 1.5)
+  (setq line-spacing 1.5)
   ;; or if you want to set it globaly
-  ;;(setq-default line-spacing 0.3)
+  (setq-default line-spacing 0.3)
 #+end_src
 * 界面设定等通用配置
+** 设置界面显示
 #+begin_src emacs-lisp
-  ;; 设置界面显示
   (menu-bar-mode 0)				;; 删除菜单栏
-  (scroll-bar-mode 0)				;; 删除滚动条
+  (scroll-bar-mode 0)			;; 删除滚动条
   (tool-bar-mode 0)				;; 删除工具栏
   (size-indication-mode t)			;; 显示文件大小
-  (show-paren-mode t)				;; 显示前面匹配的括号
+  (show-paren-mode t)			;; 显示前面匹配的括号
   (electric-pair-mode t)			;; 让括号成对的出现(打左括号出现右括号)
-  (toggle-truncate-lines t)                   ;; 关闭自动折行功能
+  (toggle-truncate-lines t)                 ;; 关闭自动折行功能
+#+end_src
+** 设置功能
+(setq inhibit-startup-screen t)           ;; 关闭Emacs启动画面方法2
+(setq gnus-inhibit-startup-message t)     ;; 关闭gnus启动时的画面
+(setq initial-scratch-message "Fuck")     ;; 启动画面文字
+(setq frame-title-format "Fuck")          ;; 设置标题栏
+(mouse-avoidance-mode 'animate)           ;; 光标过来时鼠标自动离开
+(setq initial-buffer-choice "~")	      ;; 设定打开emacs时的buffer是目录或是某个文件
+(setq confirm-kill-emacs 'y-or-n-p)       ;; 退出emacs时询问是否退出 'yes-or-no-p
+(setq auto-window-vscroll nil)            ;; 自动调整行高
 
-  ;; 设置功能
+;; 全屏打开Emacs
+;;(setq initial-frame-alist (quote ((fullscreen . maximized))))
+
+;; 减少垃圾回收次数 数值调到最大
+(setq gc-cons-threshold most-positive-fixnum)
+#+begin_src emacs-lisp
   (setq ring-bell-function 'ignore)		;; 关闭错误提示音
   (setq auto-save-default nil)		;; 关闭自动保存文件
   (setq make-backup-files nil)		;; 关闭自动备份文件
   (setq inhibit-splash-screen t)		;; 关闭Emacs启动画面
-  ;;(setq inhibit-startup-screen t)           ;; 关闭Emacs启动画面方法2
-  ;;(setq gnus-inhibit-startup-message t)     ;; 关闭gnus启动时的画面
-  ;;(setq initial-scratch-message "Fuck")     ;; 启动画面文字
-  ;;(setq frame-title-format "Fuck")          ;; 设置标题栏
 
-  ;;(mouse-avoidance-mode 'animate)           ;; 光标过来时鼠标自动离开
   (delete-selection-mode t)			;; 打字时删除选中区域
   (global-hl-line-mode t)		        ;; 当前行高亮显示
-  (global-auto-revert-mode t)			;; 外部修改文件后从新加载
-
-  ;; 滚动设置
-  ;;(setq scroll-step 0)                      ;; 好像是回滚多少行 默认是0
-  ;;(setq scroll-margin 5)                    ;; 当光标上下差5行时 屏幕开始滚动
-  (setq scroll-conservatively 100)            ;; 当光标在屏幕边缘时自动回滚到0中心-100不回滚
-
+  (global-auto-revert-mode t)		;; 外部修改文件后从新加载
   (setq default-directory "~/")	        ;; 设置默认路径 minibuffer的
-  ;;(setq initial-buffer-choice "~")		;; 设定打开emacs时的buffer是目录或是某个文件
-  ;;(setq confirm-kill-emacs 'y-or-n-p)	;; 退出emacs时询问是否退出 'yes-or-no-p
-
-  ;; 显示绝对行号 不要与相对行号同时存在
-  (global-linum-mode t)
-  ;; 显示相对行号 visual relative
-  ;;(setq display-line-numbers-type 'relative)
-  ;;(global-display-line-numbers-mode t)
-
-  ;; 全屏打开Emacs
-  ;;(setq initial-frame-alist (quote ((fullscreen . maximized))))
-
-  ;; 自动调整行高
-  ;;(setq auto-window-vscroll nil)
 
   ;; 打开时画面大小
   (setq default-frame-alist '((width . 99) (height . 29)))
+#+end_src
+** 滚动设置
+(setq scroll-step 0)                        ;; 好像是回滚多少行 默认是0
+(setq scroll-margin 5)                      ;; 当光标上下差5行时 屏幕开始滚动
+#+begin_src emacs-lisp
+  (setq scroll-conservatively 100)          ;; 当光标在屏幕边缘时自动回滚到0中心-100不回滚
+#+end_src
+** 行号
+;; 显示相对行号 visual relative
+(setq display-line-numbers-type 'relative)
+(global-display-line-numbers-mode t)
 
-  ;; 减少垃圾回收次数 数值调到最大
-  ;;(setq gc-cons-threshold most-positive-fixnum)
-
-  ;; 以下设置必须放在load主题后才能很好的生效
+;; 显示绝对行号 不要与相对行号同时存在
+#+begin_src emacs-lisp
+  (global-linum-mode t)
+#+end_src
+** 以下设置必须放在load主题后才能很好的生效
+#+begin_src emacs-lisp--
   ;;(setq-default cursor-type 'bar)		;;改变光标样式
   ;;(set-cursor-color "#FF8C00")		;;设置光标颜色
   ;;(set-cursor-color "#fcf16e")		;;设置光标颜色
@@ -798,38 +865,40 @@ SauceCodePro Nerd Font Mono    -- 英文 13
 ** eshell no need company
 #+begin_src emacs-lisp
   (add-hook 'eshell-mode-hook
-              (lambda ()
-                (company-mode -1)))
+            (lambda ()
+              (company-mode -1)))
 #+end_src
 ** org-mode config
+;; 文字上的下划线与文字的间距加大
+(setq x-underline-at-descent-line t)
+;; 把org-mode的时间显示改成英文
+(setq system-time-locale "C")
+(add-hook 'org-mode-hook
+(lambda ()
+(set (make-local-variable 'system-time-locale) "C")))
+;; org-mode 自动折行功能
+(setq truncate-lines nil) 
 #+begin_src emacs-lisp
-  ;; 把org-mode的时间显示改成英文
-  ;; (setq system-time-locale "C")
-  ;; (add-hook 'org-mode-hook
-  ;; 	  (lambda ()
-  ;; 	    (set (make-local-variable 'system-time-locale) "C")))
-
   (setq org-ellipsis " ◄")
   (add-hook 'org-mode-hook
             (lambda ()
-              ;;(setq truncate-lines nil) ;; org-mode 自动折行功能
               (org-indent-mode)
               (linum-mode -1)))
 #+end_src
 ** dired-mode config
-#+begin_src emacs-lisp
-  ;;(put 'dired-find-alternate-file 'disabled nil)
+#+begin_src emacs-lisp--
+  (put 'dired-find-alternate-file 'disabled nil)
 
-  ;; (with-eval-after-load 'dired
-  ;;   (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file))
+  (with-eval-after-load 'dired
+    (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file))
 
-  ;; (setq dired-recursive-deletes 'always)
-  ;; (setq dired-recursive-copies 'always)
+  (setq dired-recursive-deletes 'always)
+  (setq dired-recursive-copies 'always)
 
-  ;; (add-hook 'dired-mode-hook
-  ;;           (lambda ()
-  ;;             (define-key dired-mode-map (kbd "^")
-  ;;               (lambda () (interactive) (find-alternate-file "..")))))
+  (add-hook 'dired-mode-hook
+            (lambda ()
+              (define-key dired-mode-map (kbd "^")
+                (lambda () (interactive) (find-alternate-file "..")))))
 #+end_src
 * 自定义快捷键绑定
 三种配置步骤
@@ -870,10 +939,12 @@ SauceCodePro Nerd Font Mono    -- 英文 13
   ;; 将自己的keymap绑定到快捷键
   (global-set-key (kbd "M-SPC") 'zero-keymap)
 
-  ;; 绑定别的keymap
+  ;; 绑定原始的 keymap
   (define-key zero-keymap (kbd "o") 'facemenu-keymap)
 #+end_src
 ** 开始绑定 zero-keymap
+;; haskell load file in repl
+(define-key zero-keymap (kbd "y") 'company-other-backend)
 #+begin_src emacs-lisp
   ;; 在两个之间只留下一个空格
   (define-key zero-keymap (kbd "n") 'just-one-space)
@@ -898,11 +969,8 @@ SauceCodePro Nerd Font Mono    -- 英文 13
   (define-key zero-keymap (kbd "M-b") 'zero-move-word-left)
   (define-key zero-keymap (kbd "M-f") 'zero-move-word-right)
 
-  ;; haskell load file in repl
-  ;;(define-key zero-keymap (kbd "y") 'company-other-backend)
-
   ;; programming format buffer
-  (define-key zero-keymap (kbd "M-f") 'lsp-format-buffer)
+  (define-key zero-keymap (kbd "f") 'lsp-format-buffer)
 
   ;; 分屏窗口操作
   (define-key zero-keymap (kbd "wp") 'windmove-swap-states-up)
@@ -917,12 +985,24 @@ SauceCodePro Nerd Font Mono    -- 英文 13
   (define-key zero-keymap (kbd "w/") 'balance-windows)
 #+end_src
 ** 开始绑定 全局功能
-#+begin_src emacs-lisp
-  ;; 替换mac下 alt 和 meta 建
-  ;;(when *is-mac*
-  ;;  (setq mac-command-modifier 'meta)
-  ;;  (setq mac-option-modifier 'none))
+;; 替换mac下 alt 和 meta 建
+(when *is-mac*
+    (setq mac-command-modifier 'meta)
+    (setq mac-option-modifier 'none))
+    
+;; copy line or region
+(global-set-key (kbd "M-w") 'zero-copy-line-or-region)
 
+;; open down new line  (kbd "M-RET")
+(global-set-key (kbd "M-RET") (lambda () (interactive)
+    (move-end-of-line nil) (newline)))
+
+;; 手动切换不同输入法
+(global-set-key (kbd "C-c x") 'zero-cycle-font-method)
+
+;; 在Emacs中切换中文和日文
+(global-set-key (kbd "M-\\") 'zero-cycle-input-method)
+#+begin_src emacs-lisp
   ;; 多窗口切换分屏控制
   (global-set-key (kbd "M-o") 'other-window)
   (global-set-key (kbd "M-0") 'delete-window)
@@ -937,17 +1017,4 @@ SauceCodePro Nerd Font Mono    -- 英文 13
   ;; page up or down one line
   (global-set-key (kbd "C-M-n") 'scroll-up-line)
   (global-set-key (kbd "C-M-p") 'scroll-down-line)
-
-  ;; copy line or region
-  ;;(global-set-key (kbd "M-w") 'zero-copy-line-or-region)
-
-  ;; open down new line  (kbd "M-RET")
-  ;; (global-set-key (kbd "M-RET") (lambda () (interactive)
-  ;; 				(move-end-of-line nil) (newline)))
-
-  ;; 手动切换不同输入法
-  ;;(global-set-key (kbd "C-c x") 'zero-cycle-font-method)
-
-  ;; 在Emacs中切换中文和日文
-  ;;(global-set-key (kbd "M-\\") 'zero-cycle-input-method)
 #+end_src
