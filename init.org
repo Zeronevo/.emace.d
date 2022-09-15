@@ -1,7 +1,8 @@
 #+TITLE: init
 #+STARTUP: overview
-* 初始化
-** init.el
+* init.el-start
+** 说明
+*** 文件结构
 ;;; package --- init file
 ;;; Commentary:
 ;;; Code:
@@ -50,6 +51,14 @@
 ;; (require 'org)
 (org-babel-load-file
     (expand-file-name "settings.org" user-emacs-directory))
+** 配置
+#+begin_src emacs-lisp
+  ;;; package --- init file
+  ;;; Commentary:
+  ;;; Code:
+
+#+end_src
+* 初始化
 ** 添加文件路径
 require 文件
 不是文件加载方式,也不需要加载某些文件
@@ -180,6 +189,7 @@ require 文件
     (set-input-method (car zero-current-input)))
 #+end_src
 * 配置软件源镜像
+** 说明
 初始的 gnu 源 melpa emacs
 ("gnu" . "http://elpa.gnu.org/packages/")
 
@@ -195,6 +205,7 @@ require 文件
  melpa-stable   依据源码的 Tag （Git）升级，数量比 melpa 少，因为很多包作者根本不打 Tag
           org   仅仅为了 org-plus-contrib 这一个包，org 重度用户使用
     marmalade   似乎已经不维护了，个人不推荐
+** 配置
 #+begin_src emacs-lisp
   (setq package-archives
         '(("gnu"		. "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
@@ -202,6 +213,7 @@ require 文件
           ("melpa-stable"	. "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 #+end_src
 * 配置包管理软件
+** 说明
 含有自动加载(###,,,autoload)，不加载也能使用
 (require 'package)
   
@@ -225,7 +237,7 @@ require 文件
     :after (ivy)
     :bind (("M-x" . counsel-M-x))
     :config)
-    
+** 配置
 初始化包管理文件，貌似新版本也自动初始化
 刷新软件源
 安装包管理工具 use-package
@@ -362,7 +374,6 @@ c语言启动eglot
 (define-key eglot-mode-map (kbd "C-c C-f") 'eglot-format-buffer)
 (define-key eglot-mode-map (kbd "<f6>") 'xref-find-definitions)
 (define-key eglot-mode-map (kbd "C-c o") 'eglot-code-action-organize-imports)
-
 #+begin_src emacs-lisp--
   (use-package eglot
     :ensure t
@@ -385,12 +396,10 @@ c语言启动eglot
 :hook (rust-mode . lsp-deferred)
 :hook (haskell-mode . lsp-deferred)
 :hook (racket-mode . lsp-deferred)
-
 :custom
 (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
 (lsp-rust-analyzer-display-parameter-hints nil)
 (lsp-rust-analyzer-display-reborrow-hints nil)
-
 :config
 (setq lsp-modeline-diagnostics-enable t) ;;Project errors on modeline
 (setq lsp-headerline-breadcrumb-enable-symbol-numbers t)
@@ -567,7 +576,6 @@ c语言启动eglot
     (apply original-function args)))
   ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
   (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
-  
 #+begin_src emacs-lisp--
   (use-package gdscript-mode
     :ensure t
@@ -723,19 +731,14 @@ PointerAlignment:   Middle
 #+begin_src emacs-lisp
   ;; 默认读取文件编码
   (prefer-coding-system 'utf-8)
-
   ;; 默认写入文件的编码格式
   (set-buffer-file-coding-system 'utf-8)
-
   ;; 新建文件编码
   (set-default-coding-systems 'utf-8)
-
   ;; 键盘输入
   (set-keyboard-coding-system 'utf-8)
-
   ;; 终端
   (set-terminal-coding-system 'utf-8)
-
   ;; 文件名
   (set-file-name-coding-system 'utf-8)
 #+end_src
@@ -911,6 +914,7 @@ SauceCodePro Nerd Font Mono    -- 英文 13
                 (lambda () (interactive) (find-alternate-file "..")))))
 #+end_src
 * 自定义快捷键绑定
+** 说明
 三种配置步骤
 第一种:通用隐含与leader按键绑定配置
 (define-prefix-command 'my-map)
@@ -1028,3 +1032,9 @@ SauceCodePro Nerd Font Mono    -- 英文 13
   (global-set-key (kbd "C-M-n") 'scroll-up-line)
   (global-set-key (kbd "C-M-p") 'scroll-down-line)
 #+end_src
+* init.el-end
+** 配置
+#+begin_src emacs-lisp
+
+;;; init.el ends here
+#+end_src 

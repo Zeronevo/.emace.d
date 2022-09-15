@@ -1,3 +1,7 @@
+;;; package --- init file
+;;; Commentary:
+;;; Code:
+
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file) (load-file custom-file))
 
@@ -184,19 +188,14 @@
 
 ;; 默认读取文件编码
 (prefer-coding-system 'utf-8)
-
 ;; 默认写入文件的编码格式
 (set-buffer-file-coding-system 'utf-8)
-
 ;; 新建文件编码
 (set-default-coding-systems 'utf-8)
-
 ;; 键盘输入
 (set-keyboard-coding-system 'utf-8)
-
 ;; 终端
 (set-terminal-coding-system 'utf-8)
-
 ;; 文件名
 (set-file-name-coding-system 'utf-8)
 
@@ -310,3 +309,5 @@
 ;; page up or down one line
 (global-set-key (kbd "C-M-n") 'scroll-up-line)
 (global-set-key (kbd "C-M-p") 'scroll-down-line)
+
+;;; init.el ends here
