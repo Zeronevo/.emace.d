@@ -79,6 +79,13 @@ require 文件
         (eq system-type 'windows-nt)))
 #+end_src
 ** 自定义函数
+*** 刷新配置文件
+#+begin_src emacs-lisp
+  (defun zero-config-setup-org()
+    (interactive)
+    (org-babel-load-file
+     (expand-file-name "init.org" user-emacs-directory)))
+#+end_src
 *** 打开配置文件
 #+begin_src emacs-lisp
   (defun zero-open-init-file()
@@ -112,7 +119,6 @@ require 文件
       (yank)
       (move-to-column col)))
 #+end_src
-** 移动函数 word line
 *** 移动当前行到上面一行
 #+begin_src emacs-lisp
   (defun zero-move-line-up()
@@ -146,7 +152,6 @@ require 文件
     (interactive)
     (transpose-words 1))
 #+end_src
-** 字体与输入法
 *** 手动切换不同字体
 #+begin_src emacs-lisp
   (defun zero-cycle-font-method()
@@ -249,15 +254,16 @@ monokai-theme 'monokai
 spacemacs-theme 'spacemacs-dark
 dracula-theme 'dracula
 #+begin_src emacs-lisp
-  (use-package monokai-theme
+  (use-package spacemacs-theme
     :ensure t
     :defer t
-    :init (load-theme 'monokai t))
+    :init (load-theme 'spacemacs-dark t))
 #+end_src
 ** which-key
 #+begin_src emacs-lisp
   (use-package which-key
     :ensure t
+    :defer t
     :config
     (which-key-mode))
 #+end_src
@@ -303,9 +309,9 @@ dracula-theme 'dracula
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
     :ensure t
-    :defer 1
+    :defer t
+    :init (rainbow-delimiters-mode)
     :config
-    (rainbow-delimiters-mode)
     (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 #+end_src
 ** company
@@ -328,8 +334,9 @@ dracula-theme 'dracula
 #+begin_src emacs-lisp
   (use-package company
     :ensure t
+    :defer t
+    :init (add-hook 'after-init-hook 'global-company-mode)
     :config
-    (add-hook 'after-init-hook 'global-company-mode)
     (setq company-minimum-prefix-length 1)
     (setq company-idle-delay 0.0)
     (setq company-tooltip-offset-display 'lines)
@@ -455,9 +462,10 @@ c语言启动eglot
 ;; Bind `C-c y' to `yas-expand' ONLY.
 (define-key yas-minor-mode-map (kbd "C-<tab>") #'yas-expand)
 (define-key yas-minor-mode-map (kbd "C-<tab>") #'company-other-backend)
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp--
   (use-package yasnippet
     :ensure t
+    :defer 3
     :config
     (yas-reload-all)
     (add-hook 'prog-mode-hook #'yas-minor-mode)
@@ -466,7 +474,7 @@ c语言启动eglot
     (define-key yas-minor-mode-map (kbd "C-<tab>") #'yas-expand))
 #+end_src
 ** yasnippet-snippets
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp--
   (use-package yasnippet-snippets
     :ensure t
     :after (yasnippet))
@@ -521,28 +529,30 @@ c语言启动eglot
     (lambda ()
     ;;(setq indent-tabs-mode 1)
     (setq tab-width 4)))
-#+begin_src emacs-lisp
-  (use-package go-mode
-    :ensure t
-    :defer t)
-#+end_src
 
 配置go一些功能
-#+begin_src emacs-lisp
-  ;; go run
-  (defun go-run()
+;; go run
+(defun go-run()
     (interactive)
     (eshell)
     (insert "go run ."))
+(define-key go-mode-map (kbd "C-c C-c") 'go-run)
 
-  ;; Set up before-save hooks to format buffer and add/delete imports.
-  ;; Make sure you don't have other gofmt/goimports hooks enabled.
+;; Set up before-save hooks to format buffer and add/delete imports.
+;; Make sure you don't have other gofmt/goimports hooks enabled.
+#+begin_src emacs-lisp
   (defun lsp-go-install-save-hooks ()
     (setq tab-width 4)
-    (define-key go-mode-map (kbd "C-c C-c") 'go-run)
     (add-hook 'before-save-hook #'lsp-format-buffer)
     (add-hook 'before-save-hook #'lsp-organize-imports))
-  (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+#+end_src
+
+#+begin_src emacs-lisp
+  (use-package go-mode
+    :ensure t
+    :defer t
+    :config
+    (add-hook 'go-mode-hook #'lsp-go-install-save-hooks))
 #+end_src
 ** godot
 (defun lsp--gdscript-ignore-errors (original-function &rest args)
