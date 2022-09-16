@@ -280,6 +280,7 @@ dracula-theme 'dracula
     (which-key-mode))
 #+end_src
 ** ivy
+:config
 (setq ivy-use-virtual-buffers t)
 (setq ivy-initial-inputs-alist nil)
 (setq enable-recursive-minibuffers t)
@@ -471,19 +472,18 @@ c语言启动eglot
 ;; Bind `C-c y' to `yas-expand' ONLY.
 (define-key yas-minor-mode-map (kbd "C-<tab>") #'yas-expand)
 (define-key yas-minor-mode-map (kbd "C-<tab>") #'company-other-backend)
-#+begin_src emacs-lisp--
+#+begin_src emacs-lisp
   (use-package yasnippet
     :ensure t
-    :defer 3
+    :defer t
     :config
-    (yas-reload-all)
-    (add-hook 'prog-mode-hook #'yas-minor-mode)
+    (yas-global-mode)
     (define-key yas-minor-mode-map (kbd "<tab>") nil)
     (define-key yas-minor-mode-map (kbd "TAB") nil)
     (define-key yas-minor-mode-map (kbd "C-<tab>") #'yas-expand))
 #+end_src
 ** yasnippet-snippets
-#+begin_src emacs-lisp--
+#+begin_src emacs-lisp
   (use-package yasnippet-snippets
     :ensure t
     :after (yasnippet))
@@ -859,7 +859,8 @@ SauceCodePro Nerd Font Mono    -- 英文 13
 #+begin_src emacs-lisp
   (global-linum-mode t)
 #+end_src
-** 以下设置必须放在load主题后才能很好的生效
+** 界面颜色
+以下设置必须放在load主题后才能很好的生效
 #+begin_src emacs-lisp--
   ;;(setq-default cursor-type 'bar)		;;改变光标样式
   ;;(set-cursor-color "#FF8C00")		;;设置光标颜色

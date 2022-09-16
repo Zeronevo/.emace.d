@@ -169,6 +169,19 @@
   :ensure t
   :defer t)
 
+(use-package yasnippet
+  :ensure t
+  :defer t
+  :config
+  (yas-global-mode)
+  (define-key yas-minor-mode-map (kbd "<tab>") nil)
+  (define-key yas-minor-mode-map (kbd "TAB") nil)
+  (define-key yas-minor-mode-map (kbd "C-<tab>") #'yas-expand))
+
+(use-package yasnippet-snippets
+  :ensure t
+  :after (yasnippet))
+
 (defun lsp-go-install-save-hooks ()
   (setq tab-width 4)
   (add-hook 'before-save-hook #'lsp-format-buffer)
