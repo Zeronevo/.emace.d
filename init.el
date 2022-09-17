@@ -80,10 +80,9 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(use-package spacemacs-theme
+(use-package color-theme-sanityinc-tomorrow
   :ensure t
-  :defer t
-  :init (load-theme 'spacemacs-dark t))
+  :defer t)
 
 (use-package which-key
   :ensure t
