@@ -88,8 +88,7 @@
 (use-package which-key
   :ensure t
   :defer t
-  :config
-  (which-key-mode))
+  :init (which-key-mode))
 
 (use-package ivy
   :ensure t
@@ -127,7 +126,7 @@
   (setq company-tooltip-offset-display 'lines)
   (setq company-show-numbers t)
   (setq company-backends
-        '((company-capf 
+        '((company-capf
            :with company-yasnippet :separate
            company-dabbrev-code company-gtags
            company-etags company-keywords)
@@ -150,11 +149,10 @@
   (lsp-rust-analyzer-display-closure-return-type-hints t)
   :config
   (setq gc-cons-threshold 100000000)
-  (setq read-process-output-max (* 1024 1024)) ;; 1mb
+  (setq read-process-output-max (* 1024 1024))
   (setq lsp-modeline-code-actions-segments '(count icon name))
-  (setq lsp-signature-render-documentation nil) ;; 关闭在minibuffer的用eldoc显示的文档
-  (setq lsp-completion-provider :none) ;; lsp会自动设置company的backends，需要禁止此功能
-  )
+  (setq lsp-signature-render-documentation nil)
+  (setq lsp-completion-provider :none))
 
 (use-package lsp-ui
   :ensure t
@@ -199,17 +197,11 @@
   (add-hook 'before-save-hook #'lsp-format-buffer))
 (add-hook 'c-mode-hook #'lsp-c-mode-hooks)
 
-;; 默认读取文件编码
 (prefer-coding-system 'utf-8)
-;; 默认写入文件的编码格式
 (set-buffer-file-coding-system 'utf-8)
-;; 新建文件编码
 (set-default-coding-systems 'utf-8)
-;; 键盘输入
 (set-keyboard-coding-system 'utf-8)
-;; 终端
 (set-terminal-coding-system 'utf-8)
-;; 文件名
 (set-file-name-coding-system 'utf-8)
 
 (set-face-attribute
@@ -220,29 +212,27 @@
                     charset
                     (font-spec :family "Xiaolai Mono SC" :size 26)))
 
-(menu-bar-mode 0)				;; 删除菜单栏
-(scroll-bar-mode 0)			;; 删除滚动条
-(tool-bar-mode 0)				;; 删除工具栏
-(size-indication-mode t)			;; 显示文件大小
-(show-paren-mode t)			;; 显示前面匹配的括号
-(electric-pair-mode t)			;; 让括号成对的出现(打左括号出现右括号)
-(toggle-truncate-lines t)                 ;; 关闭自动折行功能
+(menu-bar-mode 0)
+(scroll-bar-mode 0)
+(tool-bar-mode 0)
+(size-indication-mode t)
+(show-paren-mode t)
+(electric-pair-mode t)
+(toggle-truncate-lines t)
 
-(setq ring-bell-function 'ignore)		;; 关闭错误提示音
-(setq auto-save-default nil)		;; 关闭自动保存文件
-(setq make-backup-files nil)		;; 关闭自动备份文件
-(setq inhibit-splash-screen t)		;; 关闭Emacs启动画面
+(setq ring-bell-function 'ignore)
+(setq auto-save-default nil)
+(setq make-backup-files nil)
+(setq inhibit-splash-screen t)
 
-(delete-selection-mode t)			;; 打字时删除选中区域
-(global-hl-line-mode t)		        ;; 当前行高亮显示
-(global-auto-revert-mode t)		;; 外部修改文件后从新加载
-(setq default-directory "~/")	        ;; 设置默认路径 minibuffer的
+(delete-selection-mode t)
+(global-hl-line-mode t)
+(global-auto-revert-mode t)
+(setq default-directory "~/")
 
-;; 打开时画面大小
 (setq default-frame-alist '((width . 99) (height . 29)))
 
-(setq scroll-conservatively 100)          ;; 当光标在屏幕边缘时自动回滚到0中心-100不回滚
-
+(setq scroll-conservatively 100)
 (global-linum-mode t)
 
 (set-cursor-color "#DC143C")
@@ -260,45 +250,26 @@
             (org-indent-mode)
             (linum-mode -1)))
 
-;; 取消原来默认的定义
 (global-unset-key (kbd "M-SPC"))
-
-;; 定义自己的 keymap
 (define-prefix-command 'zero-keymap)
-
-;; 将自己的keymap绑定到快捷键
 (global-set-key (kbd "M-SPC") 'zero-keymap)
 
-;; 绑定原始的 keymap
-(define-key zero-keymap (kbd "o") 'facemenu-keymap)
-
-;; 在两个之间只留下一个空格
 (define-key zero-keymap (kbd "n") 'just-one-space)
-;; 清除每一行末尾没用的空白
 (define-key zero-keymap (kbd "m") 'whitespace-cleanup)
-;; 输入 eshell 命令
 (define-key zero-keymap (kbd "e") 'eshell)
-;; open init file
 (define-key zero-keymap (kbd "<f2>") 'zero-open-init-file)
-;; 手动切换不同输入法
 (define-key zero-keymap (kbd "x") 'zero-cycle-font-method)
-;; counsel-recentf
 (define-key zero-keymap (kbd "r") 'counsel-recentf)
-;; 重复上一个命令
 (define-key zero-keymap (kbd "M-r") 'repeat)
-;; copy current line to below
 (define-key zero-keymap (kbd "M-d") 'zero-duplicate-line)
 
-;; move word line
 (define-key zero-keymap (kbd "M-p") 'zero-move-line-up)
 (define-key zero-keymap (kbd "M-n") 'zero-move-line-down)
 (define-key zero-keymap (kbd "M-b") 'zero-move-word-left)
 (define-key zero-keymap (kbd "M-f") 'zero-move-word-right)
 
-;; programming format buffer
 (define-key zero-keymap (kbd "f") 'lsp-format-buffer)
 
-;; 分屏窗口操作
 (define-key zero-keymap (kbd "wp") 'windmove-swap-states-up)
 (define-key zero-keymap (kbd "wn") 'windmove-swap-states-down)
 (define-key zero-keymap (kbd "wb") 'windmove-swap-states-left)
@@ -310,18 +281,15 @@
 (define-key zero-keymap (kbd "w'") 'enlarge-window)
 (define-key zero-keymap (kbd "w/") 'balance-windows)
 
-;; 多窗口切换分屏控制
 (global-set-key (kbd "M-o") 'other-window)
 (global-set-key (kbd "M-0") 'delete-window)
 (global-set-key (kbd "M-1") 'delete-other-windows)
 (global-set-key (kbd "M-2") 'split-window-below)
 (global-set-key (kbd "M-3") 'split-window-right)
 
-;; next or previous buffer
 (global-set-key (kbd "M-[") 'previous-buffer)
 (global-set-key (kbd "M-]") 'next-buffer)
 
-;; page up or down one line
 (global-set-key (kbd "C-M-n") 'scroll-up-line)
 (global-set-key (kbd "C-M-p") 'scroll-down-line)
 
