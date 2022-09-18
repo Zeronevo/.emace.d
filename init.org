@@ -209,7 +209,7 @@ require 文件
 #+begin_src emacs-lisp
   (setq package-archives
         '(("gnu"		. "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
-          ("melpa"            . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+          ("melpa"          . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
           ("melpa-stable"	. "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 #+end_src
 * 配置包管理软件
@@ -268,21 +268,40 @@ dracula-theme 'dracula
 zenburn-theme 'zenburn
 solarized-theme 'solarized-dark
 material-theme 'material
-#+begin_src emacs-lisp--
-  (use-package dracula-theme
+#+begin_src emacs-lisp
+  (use-package monokai-theme
     :ensure t
     :defer t
-    :init (load-theme 'dracula t))
+    :init (load-theme 'monokai t))
 #+end_src
-
-color-theme-sanityinc-tomorrow
+*** monokai-theme-customization
+(setq ;; foreground and background
+      monokai-foreground     "#ABB2BF"
+      monokai-background     "#282C34"
+      ;; highlights and comments
+      monokai-comments       "#F8F8F0"
+      monokai-emphasis       "#282C34"
+      monokai-highlight      "#FFB269"
+      monokai-highlight-alt  "#66D9EF"
+      monokai-highlight-line "#1B1D1E"
+      monokai-line-number    "#F8F8F0"
+      ;; colours
+      monokai-blue           "#61AFEF"
+      monokai-cyan           "#56B6C2"
+      monokai-green          "#98C379"
+      monokai-gray           "#3E4451"
+      monokai-violet         "#C678DD"
+      monokai-red            "#E06C75"
+      monokai-orange         "#D19A66"
+      monokai-yellow         "#E5C07B")
+*** color-theme-sanityinc-tomorrow
 (require 'color-theme-sanityinc-tomorrow)
 M-x color-theme-sanityinc-tomorrow-day
 M-x color-theme-sanityinc-tomorrow-night
 M-x color-theme-sanityinc-tomorrow-blue
 M-x color-theme-sanityinc-tomorrow-bright
 M-x color-theme-sanityinc-tomorrow-eighties
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp--
   (use-package color-theme-sanityinc-tomorrow
     :ensure t
     :defer t)   
@@ -707,7 +726,7 @@ c语言启动eglot
 在 ~ 家目录创建文件 .clang-format 以下是文件的内容：
 
 ---
-BasedOnStyle: llvm
+BasedOnStyle: llvm or google
 
 #AllowShortBlocksOnASingleLine: Empty
 #AllowAllParametersOfDeclarationOnNextLine: true
@@ -722,7 +741,7 @@ AllowShortFunctionsOnASingleLine: Empty
 IndentWidth: 4
 
 #指针和引用的对齐: Left, Right, Middle
-PointerAlignment:   Middle
+#PointerAlignment:   Middle
 
 #UseTab: Never
 *** config
@@ -877,14 +896,14 @@ SauceCodePro Nerd Font Mono    -- 英文 13
 #+end_src
 ** 界面颜色
 以下设置必须放在load主题后才能很好的生效
-#+begin_src emacs-lisp--
-  ;;(setq-default cursor-type 'bar)		;;改变光标样式
-  ;;(set-cursor-color "#FF8C00")		;;设置光标颜色
-  ;;(set-cursor-color "#fcf16e")		;;设置光标颜色
-  ;;(set-background-color "black")		;;屏幕黑色背景
-  ;;(set-foreground-color "white")		;;屏幕白色前景
-  ;;(set-face-background 'region "violet")	;;选中区域背景色
-  ;;(set-face-background 'region "#b7ba6b")	;;选中区域背景色
+(setq-default cursor-type 'bar)		;;改变光标样式
+(set-cursor-color "#FF8C00")		;;设置光标颜色
+(set-background-color "black")		;;屏幕黑色背景
+(set-foreground-color "white")		;;屏幕白色前景
+(set-face-background 'region "violet")	;;选中区域背景色
+(set-face-background 'region "#b7ba6b")	;;选中区域背景色
+#+begin_src emacs-lisp
+  (set-cursor-color "#DC143C")
 #+end_src
 * 内置包系统差异等配置
 ** 如果是windows就把默认minibuffer打开路径设置为下面的 
@@ -1053,5 +1072,10 @@ SauceCodePro Nerd Font Mono    -- 英文 13
 ** 配置
 #+begin_src emacs-lisp
 
-;;; init.el ends here
+  ;; Local Variables:
+  ;; no-byte-compile: t
+  ;; fill-column: 95
+  ;; End:
+
+  ;;; init.el ends here
 #+end_src 

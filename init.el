@@ -68,7 +68,7 @@
 
 (setq package-archives
       '(("gnu"		. "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
-        ("melpa"            . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+        ("melpa"          . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
         ("melpa-stable"	. "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 
 (unless (bound-and-true-p package-initialized)
@@ -80,9 +80,10 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(use-package color-theme-sanityinc-tomorrow
+(use-package monokai-theme
   :ensure t
-  :defer t)
+  :defer t
+  :init (load-theme 'monokai t))
 
 (use-package which-key
   :ensure t
@@ -244,6 +245,8 @@
 
 (global-linum-mode t)
 
+(set-cursor-color "#DC143C")
+
 (when *is-windows*
   (setq default-directory "e:/"))
 
@@ -321,5 +324,10 @@
 ;; page up or down one line
 (global-set-key (kbd "C-M-n") 'scroll-up-line)
 (global-set-key (kbd "C-M-p") 'scroll-down-line)
+
+;; Local Variables:
+;; no-byte-compile: t
+;; fill-column: 95
+;; End:
 
 ;;; init.el ends here
