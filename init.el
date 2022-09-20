@@ -1,4 +1,4 @@
-;;; package --- init file
+;;; init.el --- Load the full configuration -*- lexical-binding: t -*-
 ;;; Commentary:
 ;;; Code:
 
@@ -66,15 +66,54 @@
   (set-frame-font (car zero-current-font))
   (message (car zero-current-font)))
 
+(prefer-coding-system 'utf-8)
+(set-buffer-file-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-file-name-coding-system 'utf-8)
+
+(set-face-attribute
+ 'default nil :font "SauceCodePro Nerd Font Mono 13")
+
+(dolist (charset '(kana han symbol cjk-misc bopomofo))
+  (set-fontset-font (frame-parameter nil 'font)
+                    charset
+                    (font-spec :family "Xiaolai Mono SC" :size 26)))
+
+(menu-bar-mode 0)
+(scroll-bar-mode 0)
+(tool-bar-mode 0)
+(size-indication-mode t)
+(show-paren-mode t)
+(electric-pair-mode t)
+(toggle-truncate-lines t)
+
+(setq ring-bell-function 'ignore)
+(setq auto-save-default nil)
+(setq make-backup-files nil)
+(setq inhibit-splash-screen t)
+
+(delete-selection-mode t)
+(global-hl-line-mode t)
+(global-auto-revert-mode t)
+(setq default-directory "~/")
+
+(setq default-frame-alist '((width . 99) (height . 29)))
+
+(setq scroll-conservatively 100)
+(global-linum-mode t)
+
+(set-cursor-color "#DC143C")
+
+(global-unset-key (kbd "M-SPC"))
+(define-prefix-command 'zero-keymap)
+(global-set-key (kbd "M-SPC") 'zero-keymap)
+
 (setq package-archives
-      '(("gnu"		. "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
-        ("melpa"          . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
-        ("melpa-stable"	. "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
-
-(unless (bound-and-true-p package-initialized)
-  (package-initialize))
-
-(unless package-archive-contents (package-refresh-contents))
+      '(("gnu" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+        ("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+        ("melpa-stable" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -92,8 +131,9 @@
 
 (use-package ivy
   :ensure t
+  :defer t
+  :init (ivy-mode)
   :config
-  (ivy-mode)
   (setq ivy-count-format "(%d/%d) "))
 
 (use-package counsel
@@ -156,12 +196,19 @@
 
 (use-package lsp-ui
   :ensure t
-  :defer t
+  :after (lsp-mode)
   :custom
   (lsp-ui-peek-always-show t)
   (lsp-ui-sideline-show-hover t)
   (lsp-ui-doc-enable nil)
   :commands lsp-ui-mode)
+
+(use-package lsp-ivy
+  :ensure t
+  :after (lsp-mode)
+  :bind
+  (:map zero-keymap
+        ("v" . lsp-ivy-workspace-symbol)))
 
 (use-package flycheck
   :ensure t
@@ -191,51 +238,14 @@
   :config
   (add-hook 'go-mode-hook #'lsp-go-install-save-hooks))
 
+(define-key zero-keymap (kbd "M-v") 'hs-toggle-hiding)
+(add-hook 'prog-mode-hook #'hs-minor-mode)
+
 (defun lsp-c-mode-hooks ()
   (setq c-basic-offset 4)
   (c-toggle-comment-style -1)
   (add-hook 'before-save-hook #'lsp-format-buffer))
 (add-hook 'c-mode-hook #'lsp-c-mode-hooks)
-
-(prefer-coding-system 'utf-8)
-(set-buffer-file-coding-system 'utf-8)
-(set-default-coding-systems 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-file-name-coding-system 'utf-8)
-
-(set-face-attribute
- 'default nil :font "SauceCodePro Nerd Font Mono 13")
-
-(dolist (charset '(kana han symbol cjk-misc bopomofo))
-  (set-fontset-font (frame-parameter nil 'font)
-                    charset
-                    (font-spec :family "Xiaolai Mono SC" :size 26)))
-
-(menu-bar-mode 0)
-(scroll-bar-mode 0)
-(tool-bar-mode 0)
-(size-indication-mode t)
-(show-paren-mode t)
-(electric-pair-mode t)
-(toggle-truncate-lines t)
-
-(setq ring-bell-function 'ignore)
-(setq auto-save-default nil)
-(setq make-backup-files nil)
-(setq inhibit-splash-screen t)
-
-(delete-selection-mode t)
-(global-hl-line-mode t)
-(global-auto-revert-mode t)
-(setq default-directory "~/")
-
-(setq default-frame-alist '((width . 99) (height . 29)))
-
-(setq scroll-conservatively 100)
-(global-linum-mode t)
-
-(set-cursor-color "#DC143C")
 
 (when *is-windows*
   (setq default-directory "e:/"))
@@ -249,10 +259,6 @@
           (lambda ()
             (org-indent-mode)
             (linum-mode -1)))
-
-(global-unset-key (kbd "M-SPC"))
-(define-prefix-command 'zero-keymap)
-(global-set-key (kbd "M-SPC") 'zero-keymap)
 
 (define-key zero-keymap (kbd "n") 'just-one-space)
 (define-key zero-keymap (kbd "m") 'whitespace-cleanup)

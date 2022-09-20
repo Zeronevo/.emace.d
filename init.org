@@ -1,6 +1,6 @@
 #+TITLE: init
 #+STARTUP: overview
-* init.el-header
+* init-header
 ** 说明
 *** 文件结构
 ;;; package --- init file
@@ -53,7 +53,7 @@
     (expand-file-name "settings.org" user-emacs-directory))
 ** 配置
 #+begin_src emacs-lisp
-  ;;; package --- init file
+  ;;; init.el --- Load the full configuration -*- lexical-binding: t -*-
   ;;; Commentary:
   ;;; Code:
 
@@ -76,7 +76,7 @@
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
   (when (file-exists-p custom-file) (load-file custom-file))
 #+end_src
-* custom-variable
+* init-custom-variable
 ** 说明
 判断操作系统类型
 *is-mac*
@@ -90,7 +90,7 @@
     (or (eq system-type 'ms-dos)
         (eq system-type 'windows-nt)))
 #+end_src
-* custom-function
+* init-custom-function
 ** 说明
 *** 手动切换中文和日文输入法
   (defun zero-cycle-input-method()
@@ -190,7 +190,196 @@
     (set-frame-font (car zero-current-font))
     (message (car zero-current-font)))
 #+end_src
-* Configure-source-mirror
+* init-encoding
+** 说明
+这个如果设定了在windows下会出现莫名的乱码不认字体
+(setq locale-coding-system 'utf-8)
+
+windows下设定语言环境会出现字体混乱
+(set-language-environment 'utf-8)
+
+下面两个是设置剪切板的字符集
+因为windows是utf-16-le所以设置后复制粘贴会出现乱码
+(set-clipboard-coding-system 'utf-8)
+(set-selection-coding-system 'utf-8)
+
+默认读取文件编码
+(prefer-coding-system 'utf-8)
+
+默认写入文件的编码格式
+(set-buffer-file-coding-system 'utf-8)
+
+新建文件编码
+(set-default-coding-systems 'utf-8)
+
+键盘输入
+(set-keyboard-coding-system 'utf-8)
+
+终端
+(set-terminal-coding-system 'utf-8)
+
+文件名
+(set-file-name-coding-system 'utf-8)
+** 配置
+#+begin_src emacs-lisp
+  (prefer-coding-system 'utf-8)
+  (set-buffer-file-coding-system 'utf-8)
+  (set-default-coding-systems 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-file-name-coding-system 'utf-8)
+#+end_src
+* init-fonts
+** 说明
+*** 字体名称
+YaHei Consolas Hybrid        Source Han Sans HW SC VF
+Monaco    Source Code Pro    微软雅黑Monaco
+Microsoft YaHei Mono         Fira Code Regular
+Inziu Roboto SC Bold         Inziu Iosevka Slab SC
+Fira Code Regular 10         Source Han Sans
+Sarasa Term Slab SC          文泉驿等宽正黑
+Sarasa Mono Slab SC          Cascadia Code PL SemiBold
+星汉等宽 CN
+*** 现在正在使用的字体
+Noto Sans Mono CJK SC Regular  -- 等宽等高中英文
+Xiaolai Mono SC                -- 中文 26
+SauceCodePro Nerd Font Mono    -- 英文 13
+*** 设置字体和大小
+(set-frame-font "Cascadia Code PL 13")
+(set-frame-font "Fira Code Regular 13")
+*** 单独设置英文字体
+(set-face-attribute
+    'default nil :font "SauceCodePro Nerd Font Mono 13")
+*** 单独设置中文字体
+(dolist (charset '(kana han symbol cjk-misc bopomofo))
+    (set-fontset-font (frame-parameter nil 'font)
+            charset
+            (font-spec :family "Xiaolai Mono SC" :size 26)))
+*** 设置不同字体比例
+  (setq face-font-rescale-alist
+        '(("Fira Code" . (/ 20 12.0))
+          ("Inziu Iosevka SC" . 1.2)
+          ("Source Han Sans" . 1.2)))
+*** 选择性的设置
+  (if *is-windows*
+      (progn
+        (set-face-attribute 'default nil :font "Source Code Pro 12")
+        (dolist (charset '(kana han symbol cjk-misc bopomofo))
+          (set-fontset-font (frame-parameter nil 'font)
+                            charset (font-spec :family "Inziu Iosevka SC" :size 22))))
+    (set-face-attribute 'default nil :font "Source Code Pro 12"))
+
+  (set-face-attribute 'default nil :font
+                      (format   "%s:pixelsize=%d" "Fira Code Regular" 20))
+  (dolist (charset '(kana han cjk-misc bopomofo))
+    (set-fontset-font (frame-parameter nil 'font) charset
+                      (font-spec :family "Source Han Sans" :size 20)))
+*** 设定行间距
+如果设置为整数，行间距是像素个数，如果是浮点数将会被视作相对倍数。
+(setq line-spacing 1.5)
+or if you want to set it globaly
+(setq-default line-spacing 0.3)
+** 配置
+#+begin_src emacs-lisp
+  (set-face-attribute
+   'default nil :font "SauceCodePro Nerd Font Mono 13")
+
+  (dolist (charset '(kana han symbol cjk-misc bopomofo))
+    (set-fontset-font (frame-parameter nil 'font)
+                      charset
+                      (font-spec :family "Xiaolai Mono SC" :size 26)))
+#+end_src
+* init-ui
+** 说明
+- 设置界面显示
+  (menu-bar-mode 0)				;; 删除菜单栏
+  (scroll-bar-mode 0)			;; 删除滚动条
+  (tool-bar-mode 0)				;; 删除工具栏
+  (size-indication-mode t)			;; 显示文件大小
+  (show-paren-mode t)			;; 显示前面匹配的括号
+  (electric-pair-mode t)			;; 让括号成对的出现(打左括号出现右括号)
+  (toggle-truncate-lines t)                 ;; 关闭自动折行功能
+- 设置功能
+  (setq inhibit-startup-screen t)           ;; 关闭Emacs启动画面方法2
+  (setq gnus-inhibit-startup-message t)     ;; 关闭gnus启动时的画面
+  (setq initial-scratch-message "Fuck")     ;; 启动画面文字
+  (setq frame-title-format "Fuck")          ;; 设置标题栏
+  (mouse-avoidance-mode 'animate)           ;; 光标过来时鼠标自动离开
+  (setq initial-buffer-choice "~")          ;; 设定打开emacs时的buffer是目录或是某个文件
+  (setq confirm-kill-emacs 'y-or-n-p)       ;; 退出emacs时询问是否退出 'yes-or-no-p
+  (setq auto-window-vscroll nil)            ;; 自动调整行高
+  (setq ring-bell-function 'ignore)		;; 关闭错误提示音
+  (setq auto-save-default nil)		;; 关闭自动保存文件
+  (setq make-backup-files nil)		;; 关闭自动备份文件
+  (setq inhibit-splash-screen t)		;; 关闭Emacs启动画面
+  (delete-selection-mode t)			;; 打字时删除选中区域
+  (global-hl-line-mode t)                   ;; 当前行高亮显示
+  (global-auto-revert-mode t)		;; 外部修改文件后从新加载
+  (setq default-directory "~/")             ;; 设置默认路径 minibuffer的
+- 滚动设置
+  (setq scroll-step 0)                      ;; 好像是回滚多少行 默认是0
+  (setq scroll-margin 5)                    ;; 当光标上下差5行时 屏幕开始滚动
+  (setq scroll-conservatively 100)          ;; 当光标在屏幕边缘时自动回滚到0中心-100不回滚
+- 打开时画面大小
+  (setq default-frame-alist '((width . 99) (height . 29)))
+- 全屏打开Emacs
+  (setq initial-frame-alist (quote ((fullscreen . maximized))))
+- 减少垃圾回收次数 数值调到最大
+  (setq gc-cons-threshold most-positive-fixnum)
+- 显示相对行号 visual relative
+  (setq display-line-numbers-type 'relative)
+  (global-display-line-numbers-mode t)
+- 显示绝对行号 不要与相对行号同时存在
+  (global-linum-mode t)
+- 界面颜色，以下设置必须放在load主题后才能很好的生效
+  (setq-default cursor-type 'bar)		 ;;改变光标样式
+  (set-cursor-color "#FF8C00")		 ;;设置光标颜色
+  (set-cursor-color "#DC143C")
+  (set-background-color "black")		 ;;屏幕黑色背景
+  (set-foreground-color "white")		 ;;屏幕白色前景
+  (set-face-background 'region "violet")	 ;;选中区域背景色
+  (set-face-background 'region "#b7ba6b")	 ;;选中区域背景色
+** 配置
+#+begin_src emacs-lisp
+  (menu-bar-mode 0)
+  (scroll-bar-mode 0)
+  (tool-bar-mode 0)
+  (size-indication-mode t)
+  (show-paren-mode t)
+  (electric-pair-mode t)
+  (toggle-truncate-lines t)
+
+  (setq ring-bell-function 'ignore)
+  (setq auto-save-default nil)
+  (setq make-backup-files nil)
+  (setq inhibit-splash-screen t)
+
+  (delete-selection-mode t)
+  (global-hl-line-mode t)
+  (global-auto-revert-mode t)
+  (setq default-directory "~/")
+
+  (setq default-frame-alist '((width . 99) (height . 29)))
+
+  (setq scroll-conservatively 100)
+  (global-linum-mode t)
+
+  (set-cursor-color "#DC143C")
+#+end_src
+* init-key-map
+** 说明
+取消原来默认的定义
+定义自己的 keymap
+将自己的keymap绑定到快捷键
+facemenu-keymap 新版本好像没了这个快捷键
+(define-key zero-keymap (kbd "o") 'facemenu-keymap)
+** 配置
+#+begin_src emacs-lisp
+  (global-unset-key (kbd "M-SPC"))
+  (define-prefix-command 'zero-keymap)
+  (global-set-key (kbd "M-SPC") 'zero-keymap)
+#+end_src
+* init-source-mirror
 ** 说明
 初始的 gnu 源 melpa emacs
 ("gnu" . "http://elpa.gnu.org/packages/")
@@ -210,11 +399,11 @@
 ** 配置
 #+begin_src emacs-lisp
   (setq package-archives
-        '(("gnu"		. "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
-          ("melpa"          . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
-          ("melpa-stable"	. "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
+        '(("gnu" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+          ("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+          ("melpa-stable" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 #+end_src
-* Configure-use-package
+* use-package
 ** 说明
 含有自动加载(###,,,autoload)，不加载也能使用
 (require 'package)
@@ -253,16 +442,11 @@
     :config)
 ** 配置
 #+begin_src emacs-lisp
-  (unless (bound-and-true-p package-initialized)
-    (package-initialize))
-
-  (unless package-archive-contents (package-refresh-contents))
-
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
 #+end_src
-* Install-configure-package
+* install-configure-packages
 ** themes
 - color-theme-sanityinc-tomorrow
 (require 'color-theme-sanityinc-tomorrow)
@@ -303,8 +487,9 @@ material-theme 'material
 #+begin_src emacs-lisp
   (use-package ivy
     :ensure t
+    :defer t
+    :init (ivy-mode)
     :config
-    (ivy-mode)
     (setq ivy-count-format "(%d/%d) "))
 #+end_src
 ** counsel
@@ -425,12 +610,21 @@ material-theme 'material
 #+begin_src emacs-lisp
   (use-package lsp-ui
     :ensure t
-    :defer t
+    :after (lsp-mode)
     :custom
     (lsp-ui-peek-always-show t)
     (lsp-ui-sideline-show-hover t)
     (lsp-ui-doc-enable nil)
     :commands lsp-ui-mode)
+#+end_src
+** lsp-ivy
+#+begin_src emacs-lisp
+  (use-package lsp-ivy
+    :ensure t
+    :after (lsp-mode)
+    :bind
+    (:map zero-keymap
+          ("v" . lsp-ivy-workspace-symbol)))
 #+end_src
 ** flycheck
 #+begin_src emacs-lisp
@@ -507,38 +701,7 @@ material-theme 'material
     :config
     (add-hook 'go-mode-hook #'lsp-go-install-save-hooks))
 #+end_src
-** c-mode-config
-*** clang-format
-在 ~ 家目录创建文件 .clang-format 以下是文件的内容：
-
----
-#BasedOnStyle: llvm
-BasedOnStyle: google
-
-#AllowShortBlocksOnASingleLine: Empty
-#AllowAllParametersOfDeclarationOnNextLine: true
-#AllowShortIfStatementsOnASingleLine: true
-AlignArrayOfStructures: Left
-AllowShortFunctionsOnASingleLine: Empty
-
-#tab键盘的宽度
-#TabWidth: 4
-
-#缩进宽度
-IndentWidth: 4
-
-#指针和引用的对齐: Left, Right, Middle
-#PointerAlignment:   Middle
-
-#UseTab: Never
-*** 配置
-#+begin_src emacs-lisp
-  (defun lsp-c-mode-hooks ()
-    (setq c-basic-offset 4)
-    (c-toggle-comment-style -1)
-    (add-hook 'before-save-hook #'lsp-format-buffer))
-  (add-hook 'c-mode-hook #'lsp-c-mode-hooks)
-#+end_src
+* no-install-packages
 ** exec-path-from-shell
 macOS解决shell和emacs路径不统一
 #+begin_src emacs-lisp--
@@ -745,183 +908,44 @@ c语言启动eglot
     (setq gdscript-use-tab-indents t)
     (setq gdscript-indent-offset 4))
 #+end_src
-* Configure-encoding
-** 说明
-这个如果设定了在windows下会出现莫名的乱码不认字体
-(setq locale-coding-system 'utf-8)
-
-windows下设定语言环境会出现字体混乱
-(set-language-environment 'utf-8)
-
-下面两个是设置剪切板的字符集
-因为windows是utf-16-le所以设置后复制粘贴会出现乱码
-(set-clipboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-
-默认读取文件编码
-(prefer-coding-system 'utf-8)
-
-默认写入文件的编码格式
-(set-buffer-file-coding-system 'utf-8)
-
-新建文件编码
-(set-default-coding-systems 'utf-8)
-
-键盘输入
-(set-keyboard-coding-system 'utf-8)
-
-终端
-(set-terminal-coding-system 'utf-8)
-
-文件名
-(set-file-name-coding-system 'utf-8)
-** 配置
+* built-in-packages
+** 代码折行
 #+begin_src emacs-lisp
-  (prefer-coding-system 'utf-8)
-  (set-buffer-file-coding-system 'utf-8)
-  (set-default-coding-systems 'utf-8)
-  (set-keyboard-coding-system 'utf-8)
-  (set-terminal-coding-system 'utf-8)
-  (set-file-name-coding-system 'utf-8)
+  (define-key zero-keymap (kbd "M-v") 'hs-toggle-hiding)
+  (add-hook 'prog-mode-hook #'hs-minor-mode)
 #+end_src
-* Configure fonts
-** 说明
-*** 字体名称
-YaHei Consolas Hybrid        Source Han Sans HW SC VF
-Monaco    Source Code Pro    微软雅黑Monaco
-Microsoft YaHei Mono         Fira Code Regular
-Inziu Roboto SC Bold         Inziu Iosevka Slab SC
-Fira Code Regular 10         Source Han Sans
-Sarasa Term Slab SC          文泉驿等宽正黑
-Sarasa Mono Slab SC          Cascadia Code PL SemiBold
-星汉等宽 CN
-*** 现在正在使用的字体
-Noto Sans Mono CJK SC Regular  -- 等宽等高中英文
-Xiaolai Mono SC                -- 中文 26
-SauceCodePro Nerd Font Mono    -- 英文 13
-*** 设置字体和大小
-(set-frame-font "Cascadia Code PL 13")
-(set-frame-font "Fira Code Regular 13")
-*** 单独设置英文字体
-(set-face-attribute
-    'default nil :font "SauceCodePro Nerd Font Mono 13")
-*** 单独设置中文字体
-(dolist (charset '(kana han symbol cjk-misc bopomofo))
-    (set-fontset-font (frame-parameter nil 'font)
-            charset
-            (font-spec :family "Xiaolai Mono SC" :size 26)))
-*** 设置不同字体比例
-  (setq face-font-rescale-alist
-        '(("Fira Code" . (/ 20 12.0))
-          ("Inziu Iosevka SC" . 1.2)
-          ("Source Han Sans" . 1.2)))
-*** 选择性的设置
-  (if *is-windows*
-      (progn
-        (set-face-attribute 'default nil :font "Source Code Pro 12")
-        (dolist (charset '(kana han symbol cjk-misc bopomofo))
-          (set-fontset-font (frame-parameter nil 'font)
-                            charset (font-spec :family "Inziu Iosevka SC" :size 22))))
-    (set-face-attribute 'default nil :font "Source Code Pro 12"))
+** c-mode-config
+*** clang-format
+在 ~ 家目录创建文件 .clang-format 以下是文件的内容：
 
-  (set-face-attribute 'default nil :font
-                      (format   "%s:pixelsize=%d" "Fira Code Regular" 20))
-  (dolist (charset '(kana han cjk-misc bopomofo))
-    (set-fontset-font (frame-parameter nil 'font) charset
-                      (font-spec :family "Source Han Sans" :size 20)))
-*** 设定行间距
-如果设置为整数，行间距是像素个数，如果是浮点数将会被视作相对倍数。
-(setq line-spacing 1.5)
-or if you want to set it globaly
-(setq-default line-spacing 0.3)
-** 配置
+---
+#BasedOnStyle: llvm
+BasedOnStyle: google
+
+#AllowShortBlocksOnASingleLine: Empty
+#AllowAllParametersOfDeclarationOnNextLine: true
+#AllowShortIfStatementsOnASingleLine: true
+AlignArrayOfStructures: Left
+AllowShortFunctionsOnASingleLine: Empty
+
+#tab键盘的宽度
+#TabWidth: 4
+
+#缩进宽度
+IndentWidth: 4
+
+#指针和引用的对齐: Left, Right, Middle
+#PointerAlignment:   Middle
+
+#UseTab: Never
+*** 配置
 #+begin_src emacs-lisp
-  (set-face-attribute
-   'default nil :font "SauceCodePro Nerd Font Mono 13")
-
-  (dolist (charset '(kana han symbol cjk-misc bopomofo))
-    (set-fontset-font (frame-parameter nil 'font)
-                      charset
-                      (font-spec :family "Xiaolai Mono SC" :size 26)))
+  (defun lsp-c-mode-hooks ()
+    (setq c-basic-offset 4)
+    (c-toggle-comment-style -1)
+    (add-hook 'before-save-hook #'lsp-format-buffer))
+  (add-hook 'c-mode-hook #'lsp-c-mode-hooks)
 #+end_src
-* Configure-General-UI
-** 说明
-- 设置界面显示
-  (menu-bar-mode 0)				;; 删除菜单栏
-  (scroll-bar-mode 0)			;; 删除滚动条
-  (tool-bar-mode 0)				;; 删除工具栏
-  (size-indication-mode t)			;; 显示文件大小
-  (show-paren-mode t)			;; 显示前面匹配的括号
-  (electric-pair-mode t)			;; 让括号成对的出现(打左括号出现右括号)
-  (toggle-truncate-lines t)                 ;; 关闭自动折行功能
-- 设置功能
-  (setq inhibit-startup-screen t)           ;; 关闭Emacs启动画面方法2
-  (setq gnus-inhibit-startup-message t)     ;; 关闭gnus启动时的画面
-  (setq initial-scratch-message "Fuck")     ;; 启动画面文字
-  (setq frame-title-format "Fuck")          ;; 设置标题栏
-  (mouse-avoidance-mode 'animate)           ;; 光标过来时鼠标自动离开
-  (setq initial-buffer-choice "~")          ;; 设定打开emacs时的buffer是目录或是某个文件
-  (setq confirm-kill-emacs 'y-or-n-p)       ;; 退出emacs时询问是否退出 'yes-or-no-p
-  (setq auto-window-vscroll nil)            ;; 自动调整行高
-  (setq ring-bell-function 'ignore)		;; 关闭错误提示音
-  (setq auto-save-default nil)		;; 关闭自动保存文件
-  (setq make-backup-files nil)		;; 关闭自动备份文件
-  (setq inhibit-splash-screen t)		;; 关闭Emacs启动画面
-  (delete-selection-mode t)			;; 打字时删除选中区域
-  (global-hl-line-mode t)                   ;; 当前行高亮显示
-  (global-auto-revert-mode t)		;; 外部修改文件后从新加载
-  (setq default-directory "~/")             ;; 设置默认路径 minibuffer的
-- 滚动设置
-  (setq scroll-step 0)                      ;; 好像是回滚多少行 默认是0
-  (setq scroll-margin 5)                    ;; 当光标上下差5行时 屏幕开始滚动
-  (setq scroll-conservatively 100)          ;; 当光标在屏幕边缘时自动回滚到0中心-100不回滚
-- 打开时画面大小
-  (setq default-frame-alist '((width . 99) (height . 29)))
-- 全屏打开Emacs
-  (setq initial-frame-alist (quote ((fullscreen . maximized))))
-- 减少垃圾回收次数 数值调到最大
-  (setq gc-cons-threshold most-positive-fixnum)
-- 显示相对行号 visual relative
-  (setq display-line-numbers-type 'relative)
-  (global-display-line-numbers-mode t)
-- 显示绝对行号 不要与相对行号同时存在
-  (global-linum-mode t)
-- 界面颜色，以下设置必须放在load主题后才能很好的生效
-  (setq-default cursor-type 'bar)		 ;;改变光标样式
-  (set-cursor-color "#FF8C00")		 ;;设置光标颜色
-  (set-cursor-color "#DC143C")
-  (set-background-color "black")		 ;;屏幕黑色背景
-  (set-foreground-color "white")		 ;;屏幕白色前景
-  (set-face-background 'region "violet")	 ;;选中区域背景色
-  (set-face-background 'region "#b7ba6b")	 ;;选中区域背景色
-** 配置
-#+begin_src emacs-lisp
-  (menu-bar-mode 0)
-  (scroll-bar-mode 0)
-  (tool-bar-mode 0)
-  (size-indication-mode t)
-  (show-paren-mode t)
-  (electric-pair-mode t)
-  (toggle-truncate-lines t)
-
-  (setq ring-bell-function 'ignore)
-  (setq auto-save-default nil)
-  (setq make-backup-files nil)
-  (setq inhibit-splash-screen t)
-
-  (delete-selection-mode t)
-  (global-hl-line-mode t)
-  (global-auto-revert-mode t)
-  (setq default-directory "~/")
-
-  (setq default-frame-alist '((width . 99) (height . 29)))
-
-  (setq scroll-conservatively 100)
-  (global-linum-mode t)
-
-  (set-cursor-color "#DC143C")
-#+end_src
-* built-in-package
 ** 如果是windows就把默认minibuffer打开路径设置为下面的
 #+begin_src emacs-lisp
   (when *is-windows*
@@ -965,7 +989,7 @@ org-mode 自动折行功能
     (lambda ()
     (define-key dired-mode-map (kbd "^")
     (lambda () (interactive) (find-alternate-file "..")))))
-* Custom-Shortcut-KeyBindings
+* custom-shortcut-keybindings
 ** 说明
 三种配置步骤
 第一种:通用隐含与leader按键绑定配置
@@ -995,16 +1019,7 @@ org-mode 自动折行功能
      (save-buffer)
      (kill-emacs)))
 ** 开始定义 zero-keymap
-取消原来默认的定义
-定义自己的 keymap
-将自己的keymap绑定到快捷键
-facemenu-keymap 新版本好像没了这个快捷键
-(define-key zero-keymap (kbd "o") 'facemenu-keymap)
-#+begin_src emacs-lisp
-  (global-unset-key (kbd "M-SPC"))
-  (define-prefix-command 'zero-keymap)
-  (global-set-key (kbd "M-SPC") 'zero-keymap)
-#+end_src
+内容已经放到 init 区域
 ** 开始绑定 zero-keymap
 在两个之间只留下一个空格
 清除每一行末尾没用的空白
@@ -1076,7 +1091,7 @@ programming format buffer
   (global-set-key (kbd "C-M-n") 'scroll-up-line)
   (global-set-key (kbd "C-M-p") 'scroll-down-line)
 #+end_src
-* init.el-footer
+* init-footer
 ** 配置
 #+begin_src emacs-lisp
 
