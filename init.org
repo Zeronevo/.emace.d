@@ -363,8 +363,6 @@ or if you want to set it globaly
 
   (setq scroll-conservatively 100)
   (global-linum-mode t)
-
-  (set-cursor-color "#DC143C")
 #+end_src
 * init-key-map
 ** 说明
@@ -569,6 +567,7 @@ material-theme 'material
 :hook (rust-mode . lsp-deferred)
 :hook (haskell-mode . lsp-deferred)
 :hook (racket-mode . lsp-deferred)
+:hook (go-mode . lsp-deferred)
 :custom
 (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
 (lsp-rust-analyzer-display-parameter-hints nil)
@@ -592,7 +591,6 @@ material-theme 'material
     :init
     (setq lsp-keymap-prefix "C-c l")
     :commands (lsp lsp-deferred)
-    :hook (go-mode . lsp-deferred)
     :hook (c-mode . lsp-deferred)
     :custom
     (lsp-rust-analyzer-server-display-inlay-hints t)
@@ -668,7 +666,7 @@ material-theme 'material
     :ensure t
     :after (yasnippet))
 #+end_src
-** golang
+** golang---
 :config
 (setq gofmt-command "goimports")
 (add-hook 'before-save-hook 'gofmt-before-save)
@@ -689,7 +687,7 @@ material-theme 'material
 
 ;; Set up before-save hooks to format buffer and add/delete imports.
 ;; Make sure you don't have other gofmt/goimports hooks enabled.
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp-
   (defun lsp-go-install-save-hooks ()
     (setq tab-width 4)
     (add-hook 'before-save-hook #'lsp-format-buffer)
@@ -701,8 +699,7 @@ material-theme 'material
     :config
     (add-hook 'go-mode-hook #'lsp-go-install-save-hooks))
 #+end_src
-* no-install-packages
-** exec-path-from-shell
+** exec-path-from-shell---
 macOS解决shell和emacs路径不统一
 #+begin_src emacs-lisp--
   (when (memq window-system '(mac ns))
@@ -711,7 +708,7 @@ macOS解决shell和emacs路径不统一
       :config
       (exec-path-from-shell-initialize)))
 #+end_src
-** eglot
+** eglot---
 (require 'eglot)
 选择服务器
 (add-to-list 'eglot-server-programs '(foo-mode . ("foo-language-server" "--args")))
@@ -739,7 +736,7 @@ c语言启动eglot
 
   (add-hook 'go-mode-hook #'eglot-format-buffer-on-save)
 #+end_src
-** treemacs
+** treemacs---
 #+begin_src emacs-lisp--
   (use-package treemacs
     :ensure t
@@ -834,13 +831,13 @@ c语言启动eglot
           )
     )
 #+end_src
-** magit
+** magit---
 #+begin_src emacs-lisp--
   (use-package magit
     :ensure t
     :defer t)
 #+end_src
-** rust
+** rust---
 #+begin_src emacs-lisp--
   (use-package rust-mode
     :ensure t
@@ -849,19 +846,19 @@ c语言启动eglot
     (setq rust-format-on-save t)
     (define-key rust-mode-map (kbd "C-c C-c") 'rust-run))
 #+end_src
-** flycheck-rust
+** flycheck-rust---
 #+begin_src emacs-lisp--
   (use-package flycheck-rust
     :ensure t
     :defer 1)
 #+end_src
-** haskell
+** haskell---
 #+begin_src emacs-lisp--
   (use-package haskell-mode
     :ensure t
     :defer 1)
 #+end_src
-** lsp-haskell
+** lsp-haskell---
 #+begin_src emacs-lisp--
   (use-package lsp-haskell
     :ensure t
@@ -874,19 +871,19 @@ c语言启动eglot
   (add-hook 'haskell-interactive-mode-hook
             (lambda () (linum-mode -1)))
 #+end_src
-** common-lisp-slime
+** common-lisp-slime---
 #+begin_src emacs-lisp--
   (use-package slime
     :config (setq inferior-lisp-program "/usr/bin/sbcl"))
 #+end_src
-** racket
+** racket---
 #+begin_src emacs-lisp--
   (use-package racket-mode
     :ensure t
     :disabled
     :defer 1)
 #+end_src
-** godot
+** godot---
 (defun lsp--gdscript-ignore-errors (original-function &rest args)
   "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
   (if (string-equal major-mode "gdscript-mode")
@@ -989,6 +986,28 @@ org-mode 自动折行功能
     (lambda ()
     (define-key dired-mode-map (kbd "^")
     (lambda () (interactive) (find-alternate-file "..")))))
+** emacs 透明度
+  (global-set-key [(f11)] 'loop-alpha)
+  (setq alpha-list '((100 100) (95 65) (85 55) (75 45) (65 35)))
+  (defun loop-alpha ()
+    (interactive)
+    (let ((h (car alpha-list)))                ;; head value will set to
+      ((lambda (a ab)
+         (set-frame-parameter (selected-frame) 'alpha (list a ab))
+         (add-to-list 'default-frame-alist (cons 'alpha (list a ab)))
+         ) (car h) (car (cdr h)))
+      (setq alpha-list (cdr (append alpha-list (list h))))
+      )
+    )
+
+  default-frame-alist
+
+  (set-frame-parameter (selected-frame) 'alpha (list 90 60))
+** emacs ui 微调
+#+begin_src emacs-lisp
+  (set-cursor-color "#DC143C")
+  (set-face-background 'region "#000000")
+#+end_src
 * custom-shortcut-keybindings
 ** 说明
 三种配置步骤

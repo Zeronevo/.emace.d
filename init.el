@@ -104,8 +104,6 @@
 (setq scroll-conservatively 100)
 (global-linum-mode t)
 
-(set-cursor-color "#DC143C")
-
 (global-unset-key (kbd "M-SPC"))
 (define-prefix-command 'zero-keymap)
 (global-set-key (kbd "M-SPC") 'zero-keymap)
@@ -180,7 +178,6 @@
   :init
   (setq lsp-keymap-prefix "C-c l")
   :commands (lsp lsp-deferred)
-  :hook (go-mode . lsp-deferred)
   :hook (c-mode . lsp-deferred)
   :custom
   (lsp-rust-analyzer-server-display-inlay-hints t)
@@ -227,17 +224,6 @@
   :ensure t
   :after (yasnippet))
 
-(defun lsp-go-install-save-hooks ()
-  (setq tab-width 4)
-  (add-hook 'before-save-hook #'lsp-format-buffer)
-  (add-hook 'before-save-hook #'lsp-organize-imports))
-
-(use-package go-mode
-  :ensure t
-  :defer t
-  :config
-  (add-hook 'go-mode-hook #'lsp-go-install-save-hooks))
-
 (define-key zero-keymap (kbd "M-v") 'hs-toggle-hiding)
 (add-hook 'prog-mode-hook #'hs-minor-mode)
 
@@ -259,6 +245,9 @@
           (lambda ()
             (org-indent-mode)
             (linum-mode -1)))
+
+(set-cursor-color "#DC143C")
+(set-face-background 'region "#000000")
 
 (define-key zero-keymap (kbd "n") 'just-one-space)
 (define-key zero-keymap (kbd "m") 'whitespace-cleanup)
