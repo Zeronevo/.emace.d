@@ -55,15 +55,16 @@
   (transpose-words 1))
 
 (defun zero-cycle-font-method()
-  "Cycle font in emacs"
+  "resize cjk fontsize in emacs"
   (interactive)
   (or (boundp 'zero-font-list)
-      (setq zero-font-list '("SauceCodePro Nerd Font Mono 13" "Noto Sans Mono CJK SC Regular 13")
+      (setq zero-font-list '("Xiaolai Mono SC" "Xiaolai Mono SC 21")
             zero-current-font zero-font-list))
   (if (null (cdr zero-current-font))
       (setq zero-current-font zero-font-list)
     (setq zero-current-font (cdr zero-current-font)))
-  (set-frame-font (car zero-current-font))
+  (dolist (charset '(kana han symbol cjk-misc bopomofo))
+    (set-fontset-font t charset  (car zero-current-font)))
   (message (car zero-current-font)))
 
 (prefer-coding-system 'utf-8)
@@ -74,12 +75,10 @@
 (set-file-name-coding-system 'utf-8)
 
 (set-face-attribute
- 'default nil :font "SauceCodePro Nerd Font Mono 13")
+ 'default nil :font "SauceCodePro Nerd Font Mono-17")
 
 (dolist (charset '(kana han symbol cjk-misc bopomofo))
-  (set-fontset-font (frame-parameter nil 'font)
-                    charset
-                    (font-spec :family "Xiaolai Mono SC" :size 26)))
+  (set-fontset-font t charset "Xiaolai Mono SC"))
 
 (menu-bar-mode 0)
 (scroll-bar-mode 0)
@@ -113,6 +112,8 @@
         ("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
         ("melpa-stable" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 
+(unless (bound-and-true-p package-initialized)
+  (package-initialize))
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -233,9 +234,6 @@
   (add-hook 'before-save-hook #'lsp-format-buffer))
 (add-hook 'c-mode-hook #'lsp-c-mode-hooks)
 
-(when *is-windows*
-  (setq default-directory "e:/"))
-
 (add-hook 'eshell-mode-hook
           (lambda ()
             (company-mode -1)))
@@ -263,8 +261,6 @@
 (define-key zero-keymap (kbd "M-b") 'zero-move-word-left)
 (define-key zero-keymap (kbd "M-f") 'zero-move-word-right)
 
-(define-key zero-keymap (kbd "f") 'lsp-format-buffer)
-
 (define-key zero-keymap (kbd "wp") 'windmove-swap-states-up)
 (define-key zero-keymap (kbd "wn") 'windmove-swap-states-down)
 (define-key zero-keymap (kbd "wb") 'windmove-swap-states-left)
@@ -287,6 +283,9 @@
 
 (global-set-key (kbd "C-M-n") 'scroll-up-line)
 (global-set-key (kbd "C-M-p") 'scroll-down-line)
+
+(global-set-key (kbd "M-;") 'comment-line)
+(global-set-key (kbd "C-x C-;") 'comment-dwim)
 
 ;; Local Variables:
 ;; no-byte-compile: t

@@ -11,6 +11,7 @@
 *.~undo-tree
 
 # Self
+eln-cache
 .cache/
 auto-save-list/
 elpa/

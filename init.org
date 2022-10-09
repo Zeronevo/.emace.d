@@ -71,6 +71,10 @@
 
 不进行签名检查
 (setq package-check-signature nil)
+
+设置还原垃圾回收，减少启动时间
+(setq gc-cons-threshold most-positive-fixnum)
+(add-hook 'after-init-hook #'(lambda () (setq gc-cons-threshold 800000)))
 ** 配置
 #+begin_src emacs-lisp
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -92,47 +96,26 @@
 #+end_src
 * init-custom-function
 ** 说明
-*** 手动切换中文和日文输入法
-  (defun zero-cycle-input-method()
-    "Cycle input in emacs"
-    (interactive)
-    (or (boundp 'zero-input-list)
-        (setq zero-input-list '("japanese-katakana" "chinese-py" "japanese")
-              zero-current-input zero-input-list))
-    (if (null (cdr zero-current-input))
-        (setq zero-current-input zero-input-list)
-      (setq zero-current-input (cdr zero-current-input)))
-    (set-input-method (car zero-current-input)))
-*** 复制当前行或选中的区域
-  (defun zero-copy-line-or-region()
-    (interactive)
-    (if mark-active
-        (kill-ring-save (region-beginning)
-                        (region-end))
-      (progn
-        (kill-ring-save (line-beginning-position)
-                        (line-end-position))
-        (message "copied line"))))
-*** 常用函数
+- 常用函数
 (line-beginning-position)  (line-end-position))
 (move-beginning-of-line 1) (set-mark-command nil)
 (move-end-of-line 1)
 (kill-ring-save (region-beginning) (region-end))
 ** 配置
-- 刷新配置文件
+*** 刷新配置文件
 #+begin_src emacs-lisp
   (defun zero-config-setup-org()
     (interactive)
     (org-babel-load-file
      (expand-file-name "init.org" user-emacs-directory)))
 #+end_src
-- 打开 init.el
+*** 打开 init.el
 #+begin_src emacs-lisp
   (defun zero-open-init-file()
     (interactive)
     (find-file user-init-file))
 #+end_src
-- 复制一行到当前行下面
+*** 复制一行到当前行下面
 #+begin_src emacs-lisp
   (defun zero-duplicate-line()
     (interactive)
@@ -143,7 +126,7 @@
       (yank)
       (move-to-column col)))
 #+end_src
-- 移动当前行到上面一行
+*** 移动当前行到上面一行
 #+begin_src emacs-lisp
   (defun zero-move-line-up()
     (interactive)
@@ -153,7 +136,7 @@
           (previous-line 2)
           (move-to-column col))))
 #+end_src
-- 移动当前行到下面一行
+*** 移动当前行到下面一行
 #+begin_src emacs-lisp
   (defun zero-move-line-down()
     (interactive)
@@ -164,31 +147,71 @@
           (previous-line 1)
           (move-to-column col))))
 #+end_src
-- 移动当前单词向左
+*** 移动当前单词向左
 #+begin_src emacs-lisp
   (defun zero-move-word-left()
     (interactive)
     (transpose-words -1))
 #+end_src
-- 移动当前单词向右
+*** 移动当前单词向右
 #+begin_src emacs-lisp
   (defun zero-move-word-right()
     (interactive)
     (transpose-words 1))
 #+end_src
-- 手动切换不同字体
+*** 手动切换中文字体大小适配org-mode列表
 #+begin_src emacs-lisp
+  (defun zero-cycle-font-method()
+    "resize cjk fontsize in emacs"
+    (interactive)
+    (or (boundp 'zero-font-list)
+        (setq zero-font-list '("Xiaolai Mono SC" "Xiaolai Mono SC 21")
+              zero-current-font zero-font-list))
+    (if (null (cdr zero-current-font))
+        (setq zero-current-font zero-font-list)
+      (setq zero-current-font (cdr zero-current-font)))
+    (dolist (charset '(kana han symbol cjk-misc bopomofo))
+      (set-fontset-font t charset  (car zero-current-font)))
+    (message (car zero-current-font)))
+#+end_src
+*** 手动切换不同字体---
+#+begin_src emacs-lisp--
   (defun zero-cycle-font-method()
     "Cycle font in emacs"
     (interactive)
     (or (boundp 'zero-font-list)
-        (setq zero-font-list '("SauceCodePro Nerd Font Mono 13" "Noto Sans Mono CJK SC Regular 13")
+        (setq zero-font-list '("SauceCodePro Nerd Font Mono 17" "Noto Sans Mono CJK SC Regular 17")
               zero-current-font zero-font-list))
     (if (null (cdr zero-current-font))
         (setq zero-current-font zero-font-list)
       (setq zero-current-font (cdr zero-current-font)))
     (set-frame-font (car zero-current-font))
     (message (car zero-current-font)))
+#+end_src
+*** 手动切换中文和日文输入法---
+#+begin_src emacs-lisp--
+  (defun zero-cycle-input-method()
+    "Cycle input in emacs"
+    (interactive)
+    (or (boundp 'zero-input-list)
+        (setq zero-input-list '("japanese-katakana" "chinese-py" "japanese")
+              zero-current-input zero-input-list))
+    (if (null (cdr zero-current-input))
+        (setq zero-current-input zero-input-list)
+      (setq zero-current-input (cdr zero-current-input)))
+    (set-input-method (car zero-current-input)))
+#+end_src
+*** 复制当前行或选中的区域---
+#+begin_src emacs-lisp--
+  (defun zero-copy-line-or-region()
+    (interactive)
+    (if mark-active
+        (kill-ring-save (region-beginning)
+                        (region-end))
+      (progn
+        (kill-ring-save (line-beginning-position)
+                        (line-end-position))
+        (message "copied line"))))
 #+end_src
 * init-encoding
 ** 说明
@@ -255,11 +278,18 @@ SauceCodePro Nerd Font Mono    -- 英文 13
     (set-fontset-font (frame-parameter nil 'font)
             charset
             (font-spec :family "Xiaolai Mono SC" :size 26)))
+方法2：
+(dolist (charset '(kana han cjk-misc bopomofo))
+  (set-fontset-font t charset "xiaolai Mono SC"))
 *** 设置不同字体比例
-  (setq face-font-rescale-alist
-        '(("Fira Code" . (/ 20 12.0))
-          ("Inziu Iosevka SC" . 1.2)
-          ("Source Han Sans" . 1.2)))
+(setq face-font-rescale-alist
+      '(("Fira Code" . (/ 20 12.0))
+        ("Inziu Iosevka SC" . 1.2)
+        ("Source Han Sans" . 1.2)))
+(add-to-list 'face-font-rescale-alist
+	     '("Xiaolai Mono SC" . 1.2))
+(add-to-list 'face-font-rescale-alist
+    (cons "Xiaolai Mono SC" (/ 21 17.0)))
 *** 选择性的设置
   (if *is-windows*
       (progn
@@ -282,12 +312,10 @@ or if you want to set it globaly
 ** 配置
 #+begin_src emacs-lisp
   (set-face-attribute
-   'default nil :font "SauceCodePro Nerd Font Mono 13")
+   'default nil :font "SauceCodePro Nerd Font Mono-17")
 
   (dolist (charset '(kana han symbol cjk-misc bopomofo))
-    (set-fontset-font (frame-parameter nil 'font)
-                      charset
-                      (font-spec :family "Xiaolai Mono SC" :size 26)))
+    (set-fontset-font t charset "Xiaolai Mono SC"))
 #+end_src
 * init-ui
 ** 说明
@@ -364,7 +392,7 @@ or if you want to set it globaly
   (setq scroll-conservatively 100)
   (global-linum-mode t)
 #+end_src
-* init-key-map
+* init-zero-key-map
 ** 说明
 取消原来默认的定义
 定义自己的 keymap
@@ -401,7 +429,7 @@ facemenu-keymap 新版本好像没了这个快捷键
           ("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
           ("melpa-stable" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 #+end_src
-* use-package
+* init-package
 ** 说明
 含有自动加载(###,,,autoload)，不加载也能使用
 (require 'package)
@@ -440,6 +468,8 @@ facemenu-keymap 新版本好像没了这个快捷键
     :config)
 ** 配置
 #+begin_src emacs-lisp
+  (unless (bound-and-true-p package-initialized)
+    (package-initialize))
   (unless (package-installed-p 'use-package)
     (package-refresh-contents)
     (package-install 'use-package))
@@ -943,11 +973,6 @@ IndentWidth: 4
     (add-hook 'before-save-hook #'lsp-format-buffer))
   (add-hook 'c-mode-hook #'lsp-c-mode-hooks)
 #+end_src
-** 如果是windows就把默认minibuffer打开路径设置为下面的
-#+begin_src emacs-lisp
-  (when *is-windows*
-    (setq default-directory "e:/"))
-#+end_src
 ** eshell no need company
 #+begin_src emacs-lisp
   (add-hook 'eshell-mode-hook
@@ -973,20 +998,12 @@ org-mode 自动折行功能
               (org-indent-mode)
               (linum-mode -1)))
 #+end_src
-** dired-mode config
-(put 'dired-find-alternate-file 'disabled nil)
-
-(with-eval-after-load 'dired
-    (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file))
-
-(setq dired-recursive-deletes 'always)
-(setq dired-recursive-copies 'always)
-
-(add-hook 'dired-mode-hook
-    (lambda ()
-    (define-key dired-mode-map (kbd "^")
-    (lambda () (interactive) (find-alternate-file "..")))))
-** emacs 透明度
+** emacs ui 微调
+#+begin_src emacs-lisp
+  (set-cursor-color "#DC143C")
+  (set-face-background 'region "#000000")
+#+end_src
+** emacs 透明度---
   (global-set-key [(f11)] 'loop-alpha)
   (setq alpha-list '((100 100) (95 65) (85 55) (75 45) (65 35)))
   (defun loop-alpha ()
@@ -1003,10 +1020,23 @@ org-mode 自动折行功能
   default-frame-alist
 
   (set-frame-parameter (selected-frame) 'alpha (list 90 60))
-** emacs ui 微调
-#+begin_src emacs-lisp
-  (set-cursor-color "#DC143C")
-  (set-face-background 'region "#000000")
+** dired-mode config---
+(put 'dired-find-alternate-file 'disabled nil)
+
+(with-eval-after-load 'dired
+    (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file))
+
+(setq dired-recursive-deletes 'always)
+(setq dired-recursive-copies 'always)
+
+(add-hook 'dired-mode-hook
+    (lambda ()
+    (define-key dired-mode-map (kbd "^")
+    (lambda () (interactive) (find-alternate-file "..")))))
+** 如果是windows就把默认minibuffer打开路径设置为下面的---
+#+begin_src emacs-lisp--
+  (when *is-windows*
+    (setq default-directory "e:/"))
 #+end_src
 * custom-shortcut-keybindings
 ** 说明
@@ -1066,8 +1096,6 @@ programming format buffer
   (define-key zero-keymap (kbd "M-b") 'zero-move-word-left)
   (define-key zero-keymap (kbd "M-f") 'zero-move-word-right)
 
-  (define-key zero-keymap (kbd "f") 'lsp-format-buffer)
-
   (define-key zero-keymap (kbd "wp") 'windmove-swap-states-up)
   (define-key zero-keymap (kbd "wn") 'windmove-swap-states-down)
   (define-key zero-keymap (kbd "wb") 'windmove-swap-states-left)
@@ -1109,6 +1137,9 @@ programming format buffer
 
   (global-set-key (kbd "C-M-n") 'scroll-up-line)
   (global-set-key (kbd "C-M-p") 'scroll-down-line)
+
+  (global-set-key (kbd "M-;") 'comment-line)
+  (global-set-key (kbd "C-x C-;") 'comment-dwim)
 #+end_src
 * init-footer
 ** 配置
