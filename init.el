@@ -67,7 +67,6 @@
     (set-fontset-font t charset  (car zero-current-font)))
   (message (car zero-current-font)))
 
-(prefer-coding-system 'utf-8)
 (set-buffer-file-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-keyboard-coding-system 'utf-8)
@@ -92,7 +91,6 @@
 (setq auto-save-default nil)
 (setq make-backup-files nil)
 (setq inhibit-splash-screen t)
-
 (delete-selection-mode t)
 (global-hl-line-mode t)
 (global-auto-revert-mode t)
@@ -180,6 +178,8 @@
   (setq lsp-keymap-prefix "C-c l")
   :commands (lsp lsp-deferred)
   :hook (c-mode . lsp-deferred)
+  :hook (rust-mode . lsp-deferred)
+  :hook (go-mode . lsp-deferred)
   :custom
   (lsp-rust-analyzer-server-display-inlay-hints t)
   (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
@@ -201,13 +201,6 @@
   (lsp-ui-doc-enable nil)
   :commands lsp-ui-mode)
 
-(use-package lsp-ivy
-  :ensure t
-  :after (lsp-mode)
-  :bind
-  (:map zero-keymap
-        ("v" . lsp-ivy-workspace-symbol)))
-
 (use-package flycheck
   :ensure t
   :defer t)
@@ -224,6 +217,28 @@
 (use-package yasnippet-snippets
   :ensure t
   :after (yasnippet))
+
+(defun lsp-go-install-save-hooks ()
+  (setq tab-width 4)
+  (add-hook 'before-save-hook #'lsp-format-buffer)
+  (add-hook 'before-save-hook #'lsp-organize-imports))
+
+(use-package go-mode
+  :ensure t
+  :defer t
+  :config
+  (add-hook 'go-mode-hook #'lsp-go-install-save-hooks))
+
+(use-package rust-mode
+  :ensure t
+  :defer t
+  :config
+  (setq rust-format-on-save t)
+  (define-key rust-mode-map (kbd "C-c C-c") 'rust-run))
+
+(use-package flycheck-rust
+  :ensure t
+  :defer t)
 
 (define-key zero-keymap (kbd "M-v") 'hs-toggle-hiding)
 (add-hook 'prog-mode-hook #'hs-minor-mode)

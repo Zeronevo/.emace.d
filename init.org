@@ -10,6 +10,11 @@
 ...这里填写配置内容...
 配置文件的结尾需要添加 (provide 'commons-cfg) 来自动加载
 
+;; Local Variables:
+;; no-byte-compile: t
+;; fill-column: 95
+;; End:
+
 ;;; init.el ends here
 *** 使用 文件加载方式管理 emacs 配置文件
 ;;;; ------------------------------------
@@ -60,19 +65,15 @@
 #+end_src
 * initialization
 ** 说明
-添加文件路径 require 文件时告诉 emacs 目标路径
+;; 添加文件路径 require 文件时告诉 emacs 目标路径
 (add-to-list 'load-path (expand-file-name (concat user-emacs-directory "etc")))
-
-当用户手动从 Emacs 中修改设置时系统自动生成的配置放到下面路径
+;; 当用户手动从 Emacs 中修改设置时系统自动生成的配置放到下面路径
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-
-当有系统自动生成配置的文件时，加载它
+;; 当有系统自动生成配置的文件时，加载它
 (when (file-exists-p custom-file) (load-file custom-file))
-
-不进行签名检查
+;; 不进行签名检查
 (setq package-check-signature nil)
-
-设置还原垃圾回收，减少启动时间
+;; 设置和还原垃圾回收，减少启动时间
 (setq gc-cons-threshold most-positive-fixnum)
 (add-hook 'after-init-hook #'(lambda () (setq gc-cons-threshold 800000)))
 ** 配置
@@ -96,20 +97,20 @@
 #+end_src
 * init-custom-function
 ** 说明
-- 常用函数
+;; 常用函数
 (line-beginning-position)  (line-end-position))
 (move-beginning-of-line 1) (set-mark-command nil)
 (move-end-of-line 1)
 (kill-ring-save (region-beginning) (region-end))
 ** 配置
-*** 刷新配置文件
+*** 刷新 .org 文件生成 init.el 配置文件
 #+begin_src emacs-lisp
   (defun zero-config-setup-org()
     (interactive)
     (org-babel-load-file
      (expand-file-name "init.org" user-emacs-directory)))
 #+end_src
-*** 打开 init.el
+*** 打开 init.el 配置文件
 #+begin_src emacs-lisp
   (defun zero-open-init-file()
     (interactive)
@@ -215,37 +216,29 @@
 #+end_src
 * init-encoding
 ** 说明
-这个如果设定了在windows下会出现莫名的乱码不认字体
+;; 这个如果设定了在windows下会出现莫名的乱码不认字体
 (setq locale-coding-system 'utf-8)
-
-windows下设定语言环境会出现字体混乱
+;; windows下设定语言环境会出现字体混乱
 (set-language-environment 'utf-8)
-
-下面两个是设置剪切板的字符集
-因为windows是utf-16-le所以设置后复制粘贴会出现乱码
+;; 下面两个是设置剪切板的字符集
+;; 因为windows是utf-16-le所以设置后复制粘贴会出现乱码
 (set-clipboard-coding-system 'utf-8)
 (set-selection-coding-system 'utf-8)
-
-默认读取文件编码
+;; 默认读取文件编码-以utf8的方式打开文件
+;; 不设置它是以文件原本编码打开
 (prefer-coding-system 'utf-8)
-
-默认写入文件的编码格式
+;; 默认写入文件的编码格式
 (set-buffer-file-coding-system 'utf-8)
-
-新建文件编码
+;; 新建文件编码
 (set-default-coding-systems 'utf-8)
-
-键盘输入
+;; 键盘输入
 (set-keyboard-coding-system 'utf-8)
-
-终端
+;; 终端
 (set-terminal-coding-system 'utf-8)
-
-文件名
+;; 文件名
 (set-file-name-coding-system 'utf-8)
 ** 配置
 #+begin_src emacs-lisp
-  (prefer-coding-system 'utf-8)
   (set-buffer-file-coding-system 'utf-8)
   (set-default-coding-systems 'utf-8)
   (set-keyboard-coding-system 'utf-8)
@@ -264,7 +257,7 @@ Sarasa Term Slab SC          文泉驿等宽正黑
 Sarasa Mono Slab SC          Cascadia Code PL SemiBold
 星汉等宽 CN
 *** 现在正在使用的字体
-Noto Sans Mono CJK SC Regular  -- 等宽等高中英文
+;; Noto Sans Mono CJK SC Regular  -- 等宽等高中英文
 Xiaolai Mono SC                -- 中文 26
 SauceCodePro Nerd Font Mono    -- 英文 13
 *** 设置字体和大小
@@ -274,6 +267,7 @@ SauceCodePro Nerd Font Mono    -- 英文 13
 (set-face-attribute
     'default nil :font "SauceCodePro Nerd Font Mono 13")
 *** 单独设置中文字体
+方法1：
 (dolist (charset '(kana han symbol cjk-misc bopomofo))
     (set-fontset-font (frame-parameter nil 'font)
             charset
@@ -305,9 +299,9 @@ SauceCodePro Nerd Font Mono    -- 英文 13
     (set-fontset-font (frame-parameter nil 'font) charset
                       (font-spec :family "Source Han Sans" :size 20)))
 *** 设定行间距
-如果设置为整数，行间距是像素个数，如果是浮点数将会被视作相对倍数。
+;; 如果设置为整数，行间距是像素个数，如果是浮点数将会被视作相对倍数。
 (setq line-spacing 1.5)
-or if you want to set it globaly
+;; or if you want to set it globaly
 (setq-default line-spacing 0.3)
 ** 配置
 #+begin_src emacs-lisp
@@ -328,38 +322,37 @@ or if you want to set it globaly
   (electric-pair-mode t)			;; 让括号成对的出现(打左括号出现右括号)
   (toggle-truncate-lines t)                 ;; 关闭自动折行功能
 - 设置功能
-  (setq inhibit-startup-screen t)           ;; 关闭Emacs启动画面方法2
-  (setq gnus-inhibit-startup-message t)     ;; 关闭gnus启动时的画面
-  (setq initial-scratch-message "Fuck")     ;; 启动画面文字
-  (setq frame-title-format "Fuck")          ;; 设置标题栏
   (mouse-avoidance-mode 'animate)           ;; 光标过来时鼠标自动离开
-  (setq initial-buffer-choice "~")          ;; 设定打开emacs时的buffer是目录或是某个文件
   (setq confirm-kill-emacs 'y-or-n-p)       ;; 退出emacs时询问是否退出 'yes-or-no-p
   (setq auto-window-vscroll nil)            ;; 自动调整行高
   (setq ring-bell-function 'ignore)		;; 关闭错误提示音
   (setq auto-save-default nil)		;; 关闭自动保存文件
   (setq make-backup-files nil)		;; 关闭自动备份文件
   (setq inhibit-splash-screen t)		;; 关闭Emacs启动画面
+  (setq inhibit-startup-screen t)           ;; 关闭Emacs启动画面方法2
+  (setq gnus-inhibit-startup-message t)     ;; 关闭gnus启动时的画面
+  (setq initial-scratch-message "Fuck")     ;; 启动画面文字
+  (setq frame-title-format "Fuck")          ;; 设置标题栏
   (delete-selection-mode t)			;; 打字时删除选中区域
   (global-hl-line-mode t)                   ;; 当前行高亮显示
   (global-auto-revert-mode t)		;; 外部修改文件后从新加载
   (setq default-directory "~/")             ;; 设置默认路径 minibuffer的
+  (setq initial-buffer-choice "~")          ;; 设定打开emacs时的buffer是目录或是某个文件
 - 滚动设置
   (setq scroll-step 0)                      ;; 好像是回滚多少行 默认是0
   (setq scroll-margin 5)                    ;; 当光标上下差5行时 屏幕开始滚动
-  (setq scroll-conservatively 100)          ;; 当光标在屏幕边缘时自动回滚到0中心-100不回滚
+  (setq scroll-conservatively 100)          ;; 当光标在屏幕边缘时自动回滚到0中心 100不回滚
 - 打开时画面大小
   (setq default-frame-alist '((width . 99) (height . 29)))
 - 全屏打开Emacs
   (setq initial-frame-alist (quote ((fullscreen . maximized))))
-- 减少垃圾回收次数 数值调到最大
-  (setq gc-cons-threshold most-positive-fixnum)
 - 显示相对行号 visual relative
   (setq display-line-numbers-type 'relative)
   (global-display-line-numbers-mode t)
 - 显示绝对行号 不要与相对行号同时存在
   (global-linum-mode t)
 - 界面颜色，以下设置必须放在load主题后才能很好的生效
+  放到了config-builtin-packages的emacs ui 微调
   (setq-default cursor-type 'bar)		 ;;改变光标样式
   (set-cursor-color "#FF8C00")		 ;;设置光标颜色
   (set-cursor-color "#DC143C")
@@ -381,7 +374,6 @@ or if you want to set it globaly
   (setq auto-save-default nil)
   (setq make-backup-files nil)
   (setq inhibit-splash-screen t)
-
   (delete-selection-mode t)
   (global-hl-line-mode t)
   (global-auto-revert-mode t)
@@ -429,7 +421,7 @@ facemenu-keymap 新版本好像没了这个快捷键
           ("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
           ("melpa-stable" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")))
 #+end_src
-* init-package
+* init-use-package
 ** 说明
 含有自动加载(###,,,autoload)，不加载也能使用
 (require 'package)
@@ -474,7 +466,7 @@ facemenu-keymap 新版本好像没了这个快捷键
     (package-refresh-contents)
     (package-install 'use-package))
 #+end_src
-* install-configure-packages
+* config-install-packages
 ** themes
 - color-theme-sanityinc-tomorrow
 (require 'color-theme-sanityinc-tomorrow)
@@ -598,6 +590,8 @@ material-theme 'material
 :hook (haskell-mode . lsp-deferred)
 :hook (racket-mode . lsp-deferred)
 :hook (go-mode . lsp-deferred)
+:hook (haskell-mode . lsp-deferred)
+:hook (lua-mode . lsp-deferred)
 :custom
 (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names nil)
 (lsp-rust-analyzer-display-parameter-hints nil)
@@ -622,6 +616,8 @@ material-theme 'material
     (setq lsp-keymap-prefix "C-c l")
     :commands (lsp lsp-deferred)
     :hook (c-mode . lsp-deferred)
+    :hook (rust-mode . lsp-deferred)
+    :hook (go-mode . lsp-deferred)
     :custom
     (lsp-rust-analyzer-server-display-inlay-hints t)
     (lsp-rust-analyzer-display-lifetime-elision-hints-enable "skip_trivial")
@@ -645,10 +641,11 @@ material-theme 'material
     (lsp-ui-doc-enable nil)
     :commands lsp-ui-mode)
 #+end_src
-** lsp-ivy
-#+begin_src emacs-lisp
+** lsp-ivy---
+#+begin_src emacs-lisp--
   (use-package lsp-ivy
     :ensure t
+    :disabled
     :after (lsp-mode)
     :bind
     (:map zero-keymap
@@ -696,7 +693,7 @@ material-theme 'material
     :ensure t
     :after (yasnippet))
 #+end_src
-** golang---
+** golang
 :config
 (setq gofmt-command "goimports")
 (add-hook 'before-save-hook 'gofmt-before-save)
@@ -717,7 +714,7 @@ material-theme 'material
 
 ;; Set up before-save hooks to format buffer and add/delete imports.
 ;; Make sure you don't have other gofmt/goimports hooks enabled.
-#+begin_src emacs-lisp-
+#+begin_src emacs-lisp
   (defun lsp-go-install-save-hooks ()
     (setq tab-width 4)
     (add-hook 'before-save-hook #'lsp-format-buffer)
@@ -728,6 +725,80 @@ material-theme 'material
     :defer t
     :config
     (add-hook 'go-mode-hook #'lsp-go-install-save-hooks))
+#+end_src
+** rust
+#+begin_src emacs-lisp
+  (use-package rust-mode
+    :ensure t
+    :defer t
+    :config
+    (setq rust-format-on-save t)
+    (define-key rust-mode-map (kbd "C-c C-c") 'rust-run))
+#+end_src
+** flycheck-rust
+#+begin_src emacs-lisp
+  (use-package flycheck-rust
+    :ensure t
+    :defer t)
+#+end_src
+** haskell---
+#+begin_src emacs-lisp--
+  (use-package haskell-mode
+    :ensure t
+    :defer t)
+#+end_src
+** lsp-haskell---
+#+begin_src emacs-lisp--
+  (use-package lsp-haskell
+    :ensure t
+    :defer t)
+
+  (defun lsp-haskell-install-save-hooks ()
+    (add-hook 'before-save-hook #'lsp-format-buffer))
+  
+  (add-hook 'haskell-mode-hook #'lsp-haskell-install-save-hooks)
+
+  (add-hook 'haskell-interactive-mode-hook
+            (lambda () (linum-mode -1)))
+
+  ;;(setq lsp-haskell-server-path "~/.ghcup/bin/haskell-language-server-wrapper")
+  ;;(require 'lsp)
+  ;;(require 'lsp-haskell)
+  ;; Hooks so haskell and literate haskell major modes trigger LSP setup
+  ;;(add-hook 'haskell-mode-hook #'lsp)
+  ;;(add-hook 'haskell-literate-mode-hook #'lsp)
+#+end_src
+** lua-mode---
+Var lua-indent-level (default 3):
+indentation offset in spaces
+Var lua-indent-string-contents (default nil):
+set to t if you like to have contents of multiline strings to be indented like comments
+Var lua-indent-nested-block-content-align (default t)
+set to nil to stop aligning the content of nested blocks with the open parenthesis
+Var lua-indent-close-paren-align (default t)
+set to t to align close parenthesis with the open parenthesis rather than with the beginning of the line
+Var lua-mode-hook: list of functions to execute when lua-mode is initialized
+Var lua-documentation-url (default "http://www.lua.org/manual/5.1/manual.html#pdf-"):
+base URL for documentation lookup
+Var lua-documentation-function (default browse-url):
+function used to show documentation (eww is a viable alternative for Emacs 25)
+#+begin_src emacs-lisp--
+  (defun lsp-lua-save-format-hooks ()
+    (setq tab-width 4)
+    (add-hook 'before-save-hook #'lsp-format-buffer))
+#+end_src
+
+#+begin_src emacs-lisp--
+  (use-package lua-mode
+    :ensure t
+    :defer t
+    :init
+    (add-hook 'lua-mode-hook #'lsp-lua-save-format-hooks)
+    :config
+    (setq lua-indent-level 4)
+    (setq lua-documentation-url "http://www.lua.org/manual/5.3/manual.html#pdf-")
+    ;;(setq tab-width 4)
+    )
 #+end_src
 ** exec-path-from-shell---
 macOS解决shell和emacs路径不统一
@@ -867,40 +938,6 @@ c语言启动eglot
     :ensure t
     :defer t)
 #+end_src
-** rust---
-#+begin_src emacs-lisp--
-  (use-package rust-mode
-    :ensure t
-    :defer t
-    :config
-    (setq rust-format-on-save t)
-    (define-key rust-mode-map (kbd "C-c C-c") 'rust-run))
-#+end_src
-** flycheck-rust---
-#+begin_src emacs-lisp--
-  (use-package flycheck-rust
-    :ensure t
-    :defer 1)
-#+end_src
-** haskell---
-#+begin_src emacs-lisp--
-  (use-package haskell-mode
-    :ensure t
-    :defer 1)
-#+end_src
-** lsp-haskell---
-#+begin_src emacs-lisp--
-  (use-package lsp-haskell
-    :ensure t
-    :defer 1)
-
-  (defun lsp-haskell-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-format-buffer))
-  (add-hook 'haskell-mode-hook #'lsp-haskell-install-save-hooks)
-
-  (add-hook 'haskell-interactive-mode-hook
-            (lambda () (linum-mode -1)))
-#+end_src
 ** common-lisp-slime---
 #+begin_src emacs-lisp--
   (use-package slime
@@ -914,18 +951,21 @@ c语言启动eglot
     :defer 1)
 #+end_src
 ** godot---
-(defun lsp--gdscript-ignore-errors (original-function &rest args)
-  "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
-  (if (string-equal major-mode "gdscript-mode")
-  (let ((json-data (nth 0 args)))
-        (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
-                 (not (gethash "id" json-data nil))
-                 (not (gethash "method" json-data nil)))
-            nil ; (message "Method not found")
-          (apply original-function args)))
-    (apply original-function args)))
+#+begin_src emacs-lisp--
+  (defun lsp--gdscript-ignore-errors (original-function &rest args)
+    "Ignore the error message resulting from Godot not replying to the `JSONRPC' request."
+    (if (string-equal major-mode "gdscript-mode")
+        (let ((json-data (nth 0 args)))
+          (if (and (string= (gethash "jsonrpc" json-data "") "2.0")
+                   (not (gethash "id" json-data nil))
+                   (not (gethash "method" json-data nil)))
+              nil ; (message "Method not found")
+            (apply original-function args)))
+      (apply original-function args)))
   ;; Runs the function `lsp--gdscript-ignore-errors` around `lsp--get-message-type` to suppress unknown notification errors.
   (advice-add #'lsp--get-message-type :around #'lsp--gdscript-ignore-errors)
+#+end_src
+
 #+begin_src emacs-lisp--
   (use-package gdscript-mode
     :ensure t
@@ -935,7 +975,7 @@ c语言启动eglot
     (setq gdscript-use-tab-indents t)
     (setq gdscript-indent-offset 4))
 #+end_src
-* built-in-packages
+* config-builtin-packages
 ** 代码折行
 #+begin_src emacs-lisp
   (define-key zero-keymap (kbd "M-v") 'hs-toggle-hiding)
@@ -1068,7 +1108,7 @@ org-mode 自动折行功能
      (save-buffer)
      (kill-emacs)))
 ** 开始定义 zero-keymap
-内容已经放到 init 区域
+内容已经放到 init-zero-key-map 区域
 ** 开始绑定 zero-keymap
 在两个之间只留下一个空格
 清除每一行末尾没用的空白
